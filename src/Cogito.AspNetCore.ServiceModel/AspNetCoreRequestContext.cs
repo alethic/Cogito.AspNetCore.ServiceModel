@@ -4,7 +4,7 @@ using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     class AspNetCoreRequestContext :

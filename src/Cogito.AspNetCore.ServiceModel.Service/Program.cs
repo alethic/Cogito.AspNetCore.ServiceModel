@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Cogito.ServiceModel.AspNetCore.Service
+namespace Cogito.AspNetCore.ServiceModel.Service
 {
 
     public class Program

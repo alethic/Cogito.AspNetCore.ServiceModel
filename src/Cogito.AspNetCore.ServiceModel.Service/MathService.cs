@@ -1,4 +1,4 @@
-﻿namespace Cogito.ServiceModel.AspNetCore.Service
+﻿namespace Cogito.AspNetCore.ServiceModel.Service
 {
 
 

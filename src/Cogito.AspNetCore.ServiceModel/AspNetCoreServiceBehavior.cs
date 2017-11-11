@@ -4,7 +4,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     /// <summary>

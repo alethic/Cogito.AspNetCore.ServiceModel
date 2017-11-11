@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 
-namespace Cogito.ServiceModel.AspNetCore.Service
+namespace Cogito.AspNetCore.ServiceModel.Service
 {
     public class Startup
     {

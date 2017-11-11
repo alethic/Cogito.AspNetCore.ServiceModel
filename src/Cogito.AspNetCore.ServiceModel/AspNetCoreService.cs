@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ServiceModel;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     public class AspNetCoreService<TService>

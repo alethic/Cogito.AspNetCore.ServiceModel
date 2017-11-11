@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 using Cogito.Threading;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     /// <summary>

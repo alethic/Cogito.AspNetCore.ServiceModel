@@ -1,6 +1,6 @@
 ﻿using System.ServiceModel.Configuration;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     public class AspNetCoreBasicBindingCollectionElement :

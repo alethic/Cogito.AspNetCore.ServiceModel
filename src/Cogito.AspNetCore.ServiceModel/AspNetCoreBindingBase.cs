@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     public abstract class AspNetCoreBindingBase :

@@ -4,7 +4,7 @@ using System.ServiceModel.Channels;
 
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     public class AspNetCoreTransportBindingElement :

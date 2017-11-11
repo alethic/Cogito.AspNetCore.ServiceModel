@@ -5,7 +5,7 @@ using System.Threading.Tasks.Dataflow;
 
 using Microsoft.AspNetCore.Http;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     /// <summary>

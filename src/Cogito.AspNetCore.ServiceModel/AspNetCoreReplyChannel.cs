@@ -7,7 +7,7 @@ using Cogito.Threading;
 
 using Microsoft.AspNetCore.Http;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     class AspNetCoreReplyChannel :

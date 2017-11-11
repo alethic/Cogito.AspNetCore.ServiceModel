@@ -5,7 +5,7 @@ using System.ServiceModel.Channels;
 
 using Cogito.Collections;
 
-namespace Cogito.ServiceModel.AspNetCore
+namespace Cogito.AspNetCore.ServiceModel
 {
 
     public class AspNetCoreBasicBinding :
