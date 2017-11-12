@@ -37,7 +37,7 @@ namespace Cogito.AspNetCore.ServiceModel
             this.bufferManager = BufferManager.CreateBufferManager(transportElement.MaxBufferPoolSize, (int)transportElement.MaxReceivedMessageSize);
             this.encoderFactory = context.BindingParameters.Remove<MessageEncodingBindingElement>().CreateMessageEncoderFactory();
             this.uri = AspNetCoreUri.GetUri(context.ListenUriBaseAddress.AbsolutePath + context.ListenUriRelativeAddress);
-            this.sync = new SemaphoreSlim(4);
+            this.sync = new SemaphoreSlim(5);
         }
 
         /// <summary>
