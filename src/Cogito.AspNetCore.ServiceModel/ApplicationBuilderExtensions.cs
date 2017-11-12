@@ -18,14 +18,17 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <typeparam name="TService"></typeparam>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseServiceHost<TService>(this IApplicationBuilder app)
+        public static IApplicationBuilder UseServiceHost<TService, TContract>(this IApplicationBuilder app, PathString path)
+            where TService : TContract
         {
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
 
             // start up service host
             var q = new AspNetCoreRequestQueue();
-            var h = new ServiceHost(typeof(TService));
+            var u = new Uri($"aspnetcore://{Environment.MachineName}{path}");
+            var h = new ServiceHost(typeof(TService), u);
+            h.AddServiceEndpoint(typeof(TContract), new AspNetCoreBasicBinding(), u);
             h.Description.Behaviors.Add(new AspNetCoreServiceBehavior(q));
             h.Open();
 
@@ -35,23 +38,6 @@ namespace Cogito.AspNetCore.ServiceModel
 
             // map requests to service
             return app.Use(async (context, next) => { await q.SendAsync(context); });
-        }
-
-        /// <summary>
-        /// Creates a <see cref="ServiceHost"/> listening for requests for a given service on the specified path.
-        /// </summary>
-        /// <typeparam name="TService"></typeparam>
-        /// <param name="app"></param>
-        /// <param name="path"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseServiceHost<TService>(this IApplicationBuilder app, PathString path)
-        {
-            if (app == null)
-                throw new ArgumentNullException(nameof(app));
-            if (path == null)
-                throw new ArgumentNullException(nameof(path));
-
-            return app.Map(path, i => i.UseServiceHost<TService>());
         }
 
     }

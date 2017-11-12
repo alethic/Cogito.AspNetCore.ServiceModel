@@ -1,8 +1,7 @@
 ﻿using System;
+using System.ComponentModel;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
-
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -31,7 +30,19 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Gets the scheme supported by this binding element.
         /// </summary>
-        public override string Scheme => "http";
+        public override string Scheme => "aspnetcore";
+
+        /// <summary>
+        /// Maximum size of a buffer.
+        /// </summary>
+        [DefaultValue(AspNetCoreTransportDefaults.MaxBufferSize)]
+        public int MaxBufferSize { get; set; } = AspNetCoreTransportDefaults.MaxBufferSize;
+
+        /// <summary>
+        /// Maximum size of a fault message.
+        /// </summary>
+        [DefaultValue(AspNetCoreTransportDefaults.MaxFaultSize)]
+        public int MaxFaultSize { get; set; } = AspNetCoreTransportDefaults.MaxFaultSize;
 
         /// <summary>
         /// Creates a copy of this binding element.

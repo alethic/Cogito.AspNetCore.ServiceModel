@@ -13,6 +13,7 @@ namespace Cogito.AspNetCore.ServiceModel.Service
         }
 
         public static IWebHost BuildWebHost(string[] args) =>
+            
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .Build();

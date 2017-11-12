@@ -12,6 +12,7 @@ using System.Xml;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
+using System.Reflection;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -19,6 +20,54 @@ namespace Cogito.AspNetCore.ServiceModel
     class AspNetCoreReplyChannel :
         AsyncReplyChannelBase
     {
+
+        /// <summary>
+        /// Returns <c>true</c> if the given <see cref="MessageEncoder"/> is a MTOM encoder.
+        /// </summary>
+        /// <param name="encoder"></param>
+        /// <returns></returns>
+        static bool IsMtomEncoder(MessageEncoder encoder)
+        {
+            if (encoder == null)
+                throw new ArgumentNullException(nameof(encoder));
+
+
+            return encoder.GetType().Name == "MtomMessageEncoder";
+        }
+
+        /// <summary>
+        /// Gets the method info for GetContentType on the MTOM encoder.
+        /// </summary>
+        /// <param name="encoder"></param>
+        /// <returns></returns>
+        static MethodInfo GetMtomGetContentTypeMethod(MessageEncoder encoder)
+        {
+            if (encoder == null)
+                throw new ArgumentNullException(nameof(encoder));
+
+            var method = encoder.GetType().GetMethod("GetContentType", BindingFlags.NonPublic | BindingFlags.Instance);
+            if (method == null)
+                throw new MissingMethodException("Could not find the MtomMessageEncoder.GetContentType method");
+
+            return method;
+        }
+
+        /// <summary>
+        /// Invokes GetContentType on the MTOM encoder.
+        /// </summary>
+        /// <param name="encoder"></param>
+        /// <returns></returns>
+        static string GetMtomContentType(MessageEncoder encoder, out string boundary)
+        {
+            if (encoder == null)
+                throw new ArgumentNullException(nameof(encoder));
+
+            // invoke and collect result
+            var arg = new object[] { null };
+            var ret = (string)GetMtomGetContentTypeMethod(encoder)?.Invoke(encoder, arg);
+            boundary = (string)arg[0];
+            return ret;
+        }
 
         const int MaxBufferSize = 64 * 1024;
         const int MaxSizeOfHeaders = 4 * 1024;
@@ -134,7 +183,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
                     return new AspNetCoreRequestContext(
                         request,
-                        await ReadAndProcessMessage(request.Context.Request),
+                        await ReadMessageAsync(request.Context.Request),
                         this);
                 }
                 catch (CommunicationException e)
@@ -175,7 +224,7 @@ namespace Cogito.AspNetCore.ServiceModel
             try
             {
                 ThrowIfDisposedOrNotOpen();
-                await WriteResponseAsync(request.Context, message);
+                await WriteMessageAsync(request.Context.Response, message);
                 request.TrySetResult(true);
             }
             catch (CommunicationException e)
@@ -220,14 +269,14 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        async Task<Message> ReadAndProcessMessage(HttpRequest request)
+        async Task<Message> ReadMessageAsync(HttpRequest request)
         {
             if (request == null)
                 throw new ArgumentException(nameof(request));
 
-            var message = await ReadMessageFromRequest(request);
+            var message = await ReadMessageBodyAsync(request);
             if (message != null)
-                ProcessHttpAddressing(request, message);
+                ReadMessageAddressing(request, message);
 
             return message;
         }
@@ -237,7 +286,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        async Task<Message> ReadMessageFromRequest(HttpRequest request)
+        async Task<Message> ReadMessageBodyAsync(HttpRequest request)
         {
             if (request == null)
                 throw new ArgumentException(nameof(request));
@@ -288,7 +337,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="context"></param>
         /// <param name="message"></param>
-        void ProcessHttpAddressing(HttpRequest request, Message message)
+        void ReadMessageAddressing(HttpRequest request, Message message)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
@@ -296,7 +345,7 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new ArgumentNullException(nameof(message));
 
             // apply properties
-            AddProperties(request, message);
+            ReadProperties(request, message);
 
             // check addressing version none requirements
             if (message.Version.Addressing == AddressingVersion.None)
@@ -321,7 +370,7 @@ namespace Cogito.AspNetCore.ServiceModel
             }
 
             // derive SOAP action
-            var action = GetSoapAction(request, message);
+            var action = ReadSoapAction(request, message);
             if (action != null)
             {
                 action = WebUtility.UrlDecode(action);
@@ -343,21 +392,26 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="request"></param>
         /// <param name="message"></param>
-        void AddProperties(HttpRequest request, Message message)
+        void ReadProperties(HttpRequest request, Message message)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            var property = new HttpRequestMessageProperty();
-
-            // copy all of the request headers to the new property value
+            // existing WCF HTTP request property
+            var p1 = new HttpRequestMessageProperty();
+            p1.Method = request.Method;
+            p1.QueryString = request.QueryString.ToString();
             foreach (var header in request.Headers)
-                property.Headers.Add(header.Key, header.Value);
+                p1.Headers.Add(header.Key, header.Value);
+            message.Properties.Add(HttpRequestMessageProperty.Name, p1);
 
-            message.Properties.Add(HttpRequestMessageProperty.Name, property);
-            message.Properties.Via = GetUri(request);
+            // new ASP.Net core property
+            var p2 = new AspNetCoreMessageProperty();
+            p2.Context = request.HttpContext;
+
+            message.Properties.Via = ReadVia(request);
         }
 
         /// <summary>
@@ -365,14 +419,9 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        Uri GetUri(HttpRequest request)
+        Uri ReadVia(HttpRequest request)
         {
-            return new UriBuilder(
-                    request.Scheme,
-                    request.Host.Host,
-                    request.Host.Port ?? (int)80,
-                    request.PathBase + request.Path)
-                .Uri;
+            return new Uri($"aspNetCore://{Environment.MachineName}{request.PathBase}{request.Path}");
         }
 
         /// <summary>
@@ -381,7 +430,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="request"></param>
         /// <param name="message"></param>
         /// <returns></returns>
-        string GetSoapAction(HttpRequest request, Message message)
+        string ReadSoapAction(HttpRequest request, Message message)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
@@ -410,25 +459,59 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Writes a <see cref="Message"/> to the outgoing response.
         /// </summary>
-        /// <param name="context"></param>
+        /// <param name="response"></param>
         /// <param name="message"></param>
-        async Task WriteResponseAsync(HttpContext context, Message message)
+        async Task WriteMessageAsync(HttpResponse response, Message message)
         {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
+            if (response == null)
+                throw new ArgumentNullException(nameof(response));
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            context.Response.ContentType = encoder.MediaType;
-            encoder.WriteMessage(message, context.Response.Body);
+            var action = message.Headers.Action;
 
-            //// write message to body
-            //await Task.Factory.FromAsync(
-            //    encoder.BeginWriteMessage,
-            //    encoder.EndWriteMessage,
-            //    message,
-            //    context.Response.Body,
-            //    null);
+            if (message.Version.Addressing == AddressingVersion.None)
+            {
+                message.Headers.Action = null;
+                message.Headers.To = null;
+            }
+
+            // default values
+            response.ContentType = encoder.ContentType;
+            response.StatusCode = !message.IsFault ? 200 : (int)HttpStatusCode.InternalServerError;
+
+            // this might need some handholding, like a custom MtomEncoder since too much is internal
+            if (IsMtomEncoder(encoder))
+            {
+                response.ContentType = GetMtomContentType(encoder, out var boundary);
+                response.Headers.Add("MIME-Version", "1.0");
+            }
+
+            // HEAD requests require no actual content
+            if (response.HttpContext.Request.Method == "HEAD")
+            {
+                response.ContentLength = null;
+                response.ContentType = null;
+            }
+
+            if (message.IsEmpty == false)
+                await WriteMessageBodyAsync(response, message);
+        }
+
+        /// <summary>
+        /// Writes a message body to the outgoing response.
+        /// </summary>
+        /// <param name="response"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        async Task WriteMessageBodyAsync(HttpResponse response, Message message)
+        {
+            if (response == null)
+                throw new ArgumentNullException(nameof(response));
+            if (message == null)
+                throw new ArgumentNullException(nameof(message));
+
+            await Task.Factory.FromAsync(encoder.BeginWriteMessage, encoder.EndWriteMessage, message, response.Body, null);
         }
 
     }

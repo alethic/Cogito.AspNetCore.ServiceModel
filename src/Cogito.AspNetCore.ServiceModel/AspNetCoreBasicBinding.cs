@@ -39,11 +39,6 @@ namespace Cogito.AspNetCore.ServiceModel
         }
 
         /// <summary>
-        /// Gets the Scheme of the binding.
-        /// </summary>
-        public override string Scheme => "http";
-
-        /// <summary>
         /// Gets or sets the level of security to apply.
         /// </summary>
         [DefaultValue(AspNetCoreBasicSecurityMode.None)]

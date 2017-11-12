@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 
@@ -28,6 +27,11 @@ namespace Cogito.AspNetCore.ServiceModel
         }
 
         /// <summary>
+        /// Gets the scheme of the binding.
+        /// </summary>
+        public override string Scheme => "aspnetcore";
+
+        /// <summary>
         /// Gets the text encoding element.
         /// </summary>
         public TextMessageEncodingBindingElement TextEncodingElement => textEncoding;
@@ -42,6 +46,26 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         [DefaultValue(WSMessageEncoding.Text)]
         public WSMessageEncoding MessageEncoding { get; set; } = WSMessageEncoding.Text;
+
+        /// <summary>
+        /// Gets the maximum buffer size.
+        /// </summary>
+        [DefaultValue(AspNetCoreTransportDefaults.MaxBufferSize)]
+        public int MaxBufferSize
+        {
+            get { return transport.MaxBufferSize; }
+            set { transport.MaxBufferSize = mtomEncoding.MaxBufferSize = value; }
+        }
+
+        /// <summary>
+        /// Maximum size of a fault message.
+        /// </summary>
+        [DefaultValue(AspNetCoreTransportDefaults.MaxFaultSize)]
+        public int MaxFaultSize
+        {
+            get { return transport.MaxFaultSize; }
+            set { transport.MaxFaultSize = value; }
+        }
 
         /// <summary>
         /// Creates the binding elements.
