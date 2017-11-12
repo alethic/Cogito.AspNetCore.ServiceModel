@@ -28,4 +28,4 @@ This lets us use the existing `ServiceHost` class. And thus eventually piggyback
 
 Also, I'm using completely custom bindings. `BasicHttpBinding` is not used, of course. `AspNetCoreBasicBinding` is instead doing the same setup. I want a `AspnetCoreWSBinding`!
 
-MTOM encoding needs to be fixed. It looks like `MtomEncoder` from WCF is pretty much completely internaly. No good way to grab the boundary stuff.
+MTOM encoding needs to be fixed. It looks like `MtomEncoder` from WCF is pretty much completely internal. No good way to grab the boundary stuff.
