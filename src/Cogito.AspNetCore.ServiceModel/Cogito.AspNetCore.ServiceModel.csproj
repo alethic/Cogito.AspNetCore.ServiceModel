@@ -5,6 +5,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Authors>Jerome Haltom</Authors>
     <Company />
+    <Description>ASP.NET Core WCF middleware. Includes middleware for routing SOAP requests to WCF ServiceHost instances. Allows you to host your SOAP service on ASP.Net Core.</Description>
   </PropertyGroup>
 
   <ItemGroup>
