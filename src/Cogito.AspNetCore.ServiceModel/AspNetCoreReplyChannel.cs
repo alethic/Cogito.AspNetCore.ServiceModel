@@ -12,7 +12,7 @@ using System.Xml;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 
-using Cogito.IO;
+using Cogito.AspNetCore.ServiceModel.IO;
 
 namespace Cogito.AspNetCore.ServiceModel
 {

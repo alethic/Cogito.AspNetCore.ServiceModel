@@ -3,7 +3,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
 
-using Cogito.Threading;
+using Cogito.AspNetCore.ServiceModel.Threading;
 
 namespace Cogito.AspNetCore.ServiceModel
 {

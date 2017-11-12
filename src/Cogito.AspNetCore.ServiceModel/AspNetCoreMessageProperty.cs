@@ -2,7 +2,7 @@
 
 using Microsoft.AspNetCore.Http;
 
-using Cogito.Collections;
+using Cogito.AspNetCore.ServiceModel.Collections;
 
 namespace Cogito.AspNetCore.ServiceModel
 {

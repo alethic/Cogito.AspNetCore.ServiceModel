@@ -2,7 +2,7 @@
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 
-using Cogito.Collections;
+using Cogito.AspNetCore.ServiceModel.Collections;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
