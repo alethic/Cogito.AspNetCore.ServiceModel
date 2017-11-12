@@ -1,18 +1,18 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
+using System.Reflection;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading;
-using Cogito.IO;
 using System.Threading.Tasks;
 using System.Xml;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
-using System.Reflection;
+
+using Cogito.IO;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -293,7 +293,8 @@ namespace Cogito.AspNetCore.ServiceModel
             try
             {
                 // SOAP response message exchange pattern
-                if (request.Method == "GET")
+                if (request.Method == "GET" ||
+                    request.Method == "HEAD")
                     return new NullMessage();
 
                 if (string.IsNullOrEmpty(request.ContentType))
