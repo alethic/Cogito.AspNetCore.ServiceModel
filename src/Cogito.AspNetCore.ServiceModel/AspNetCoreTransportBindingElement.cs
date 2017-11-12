@@ -44,22 +44,12 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public override bool CanBuildChannelFactory<TChannel>(BindingContext context)
         {
-            return typeof(TChannel) == typeof(IRequestChannel);
+            return false;
         }
 
         public override bool CanBuildChannelListener<TChannel>(BindingContext context)
         {
             return typeof(TChannel) == typeof(IReplyChannel);
-        }
-
-        public override IChannelFactory<TChannel> BuildChannelFactory<TChannel>(BindingContext context)
-        {
-            if (context == null)
-                throw new ArgumentNullException("context");
-            if (CanBuildChannelFactory<TChannel>(context) == false)
-                throw new ArgumentException($"Unsupported channel type: {typeof(TChannel).Name}.");
-
-            throw new NotSupportedException();
         }
 
         public override IChannelListener<TChannel> BuildChannelListener<TChannel>(BindingContext context)
@@ -69,15 +59,11 @@ namespace Cogito.AspNetCore.ServiceModel
             if (CanBuildChannelListener<TChannel>(context) == false)
                 throw new ArgumentException($"Unsupported channel type: {typeof(TChannel).Name}.");
 
-            var services = context.BindingParameters.Find<IServiceProvider>();
-            if (services == null)
-                throw new CommunicationException($"Unable to locate {nameof(IServiceProvider)} in binding parameters. Ensure the {nameof(AspNetCoreServiceBehavior)} is added to the host.");
+            var queue = context.BindingParameters.Find<AspNetCoreRequestQueue>();
+            if (queue == null)
+                throw new CommunicationException($"Unable to locate {nameof(AspNetCoreRequestQueue)} binding parameter.");
 
-            var incoming = services.GetService<AspNetCoreRequestHandler>();
-            if (incoming == null)
-                throw new CommunicationException($"Unable to locate {nameof(AspNetCoreRequestHandler)}. Ensure ASP.Net core support for WCF has been registered with the service provider.");
-
-            return (IChannelListener<TChannel>)new AspNetCoreReplyChannelListener(incoming, this, context);
+            return (IChannelListener<TChannel>)new AspNetCoreReplyChannelListener(queue, this, context);
         }
 
     }

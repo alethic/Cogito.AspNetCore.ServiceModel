@@ -1,37 +1,38 @@
 ﻿using System;
+using System.Diagnostics;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
-
-using Cogito.Threading;
+using Nito.AsyncEx;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
 
     class AspNetCoreReplyChannelListener :
-        ChannelListenerBase<IReplyChannel>
+        AsyncChannelListenerBase<IReplyChannel>
     {
 
-        readonly Uri uri;
+        readonly AspNetCoreRequestQueue queue;
+        readonly BufferManager bufferManager;
         readonly MessageEncoderFactory encoderFactory;
-        readonly AspNetCoreReplyChannel reply;
+        readonly Uri uri;
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        /// <param name="incoming"></param>
+        /// <param name="queue"></param>
         /// <param name="transportElement"></param>
         /// <param name="context"></param>
         public AspNetCoreReplyChannelListener(
-            AspNetCoreRequestHandler incoming,
+            AspNetCoreRequestQueue queue,
             AspNetCoreTransportBindingElement transportElement,
             BindingContext context) :
             base(context.Binding)
         {
+            this.queue = queue ?? throw new ArgumentNullException(nameof(queue));
+            this.bufferManager = BufferManager.CreateBufferManager(transportElement.MaxBufferPoolSize, (int)transportElement.MaxReceivedMessageSize);
+            this.encoderFactory = context.BindingParameters.Remove<MessageEncodingBindingElement>().CreateMessageEncoderFactory();
             this.uri = new Uri(context.ListenUriBaseAddress, context.ListenUriRelativeAddress);
-            var messageElement = context.BindingParameters.Remove<MessageEncodingBindingElement>();
-            this.encoderFactory = messageElement.CreateMessageEncoderFactory();
-            this.reply = new AspNetCoreReplyChannel(incoming, encoderFactory, new EndpointAddress(Uri), this);
         }
 
         /// <summary>
@@ -39,74 +40,36 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public override Uri Uri => uri;
 
-        protected override void OnOpen(TimeSpan timeout)
+        protected override Task OnOpenAsync(TimeSpan timeout)
         {
-
+            return Task.FromResult(true);
         }
 
-        protected override void OnClose(TimeSpan timeout)
+        protected override Task OnCloseAsync(TimeSpan timeout)
         {
-
-        }
-
-        protected override IReplyChannel OnAcceptChannel(TimeSpan timeout)
-        {
-            return OnAcceptChannelAsync(timeout).Result;
-        }
-
-        protected override IAsyncResult OnBeginAcceptChannel(TimeSpan timeout, AsyncCallback callback, object state)
-        {
-            return OnAcceptChannelAsync(timeout).ToAsyncBegin(callback, state);
-        }
-
-        protected override IReplyChannel OnEndAcceptChannel(IAsyncResult result)
-        {
-            return ((Task<IReplyChannel>)result).ToAsyncEnd();
-        }
-
-        Task<IReplyChannel> OnAcceptChannelAsync(TimeSpan timeout)
-        {
-            return Task.FromResult((IReplyChannel)reply);
-        }
-
-        protected override IAsyncResult OnBeginWaitForChannel(TimeSpan timeout, AsyncCallback callback, object state)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override bool OnEndWaitForChannel(IAsyncResult result)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override bool OnWaitForChannel(TimeSpan timeout)
-        {
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
 
         protected override void OnAbort()
         {
-            throw new NotImplementedException();
+
         }
 
-        protected override IAsyncResult OnBeginClose(TimeSpan timeout, AsyncCallback callback, object state)
+        protected override Task<bool> OnWaitForChannelAsync(TimeSpan timeout)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(true);
         }
 
-        protected override IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state)
+        protected override async Task<IReplyChannel> OnAcceptChannelAsync(TimeSpan timeout)
         {
-            throw new NotImplementedException();
-        }
+            await Task.Delay(TimeSpan.FromSeconds(5));
 
-        protected override void OnEndClose(IAsyncResult result)
-        {
-            throw new NotImplementedException();
-        }
-
-        protected override void OnEndOpen(IAsyncResult result)
-        {
-            throw new NotImplementedException();
+            return new AspNetCoreReplyChannel(
+                queue,
+                encoderFactory,
+                bufferManager,
+                new EndpointAddress(Uri),
+                this);
         }
 
     }

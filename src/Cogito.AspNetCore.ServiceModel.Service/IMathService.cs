@@ -3,11 +3,11 @@
 namespace Cogito.AspNetCore.ServiceModel.Service
 {
 
-    [ServiceContract]
+    [ServiceContract(Namespace = "http://tempuri.org/", Name = "Math")]
     public interface IMathService
     {
 
-        [OperationContract]
+        [OperationContract(Action = "Add")]
         int Add(int x, int y);
 
     }

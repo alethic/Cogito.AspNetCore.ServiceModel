@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -14,11 +14,6 @@ namespace Cogito.AspNetCore.ServiceModel
         readonly AspNetCoreRequest request;
         readonly AspNetCoreReplyChannel reply;
         readonly Message message;
-
-        public override Message RequestMessage
-        {
-            get { return message; }
-        }
 
         /// <summary>
         /// Initializes a new instance.
@@ -32,6 +27,11 @@ namespace Cogito.AspNetCore.ServiceModel
             this.message = message ?? throw new ArgumentNullException(nameof(message));
             this.reply = reply ?? throw new ArgumentNullException(nameof(reply));
         }
+
+        /// <summary>
+        /// Gets the message associated with the request.
+        /// </summary>
+        public override Message RequestMessage => message;
 
         public override void Abort()
         {
@@ -48,17 +48,17 @@ namespace Cogito.AspNetCore.ServiceModel
 
         }
 
-        protected override Task ReplyAsync(Message message, TimeSpan timeout)
+        protected override async Task ReplyAsync(Message message, TimeSpan timeout)
         {
             if (request.Context.RequestAborted.IsCancellationRequested)
                 throw new CommunicationObjectAbortedException();
 
-            return reply.ReplyAsync(message, request, timeout);
+            await reply.ReplyAsync(message, request, timeout);
         }
 
-        protected override Task ReplyAsync(Message message)
+        protected override async Task ReplyAsync(Message message)
         {
-            return ReplyAsync(message, TimeSpan.MaxValue);
+            await ReplyAsync(message, Timeout.InfiniteTimeSpan);
         }
 
     }

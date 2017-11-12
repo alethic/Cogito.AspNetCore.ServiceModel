@@ -8,7 +8,7 @@ namespace Cogito.AspNetCore.ServiceModel
         where TService : class
     {
 
-        readonly AspNetCoreRequestHandler handler;
+        readonly AspNetCoreRequestQueue handler;
         readonly ServiceHost host;
         readonly TService singletonInstance;
 
@@ -17,7 +17,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public AspNetCoreService(params Uri[] baseAddresses)
         {
-            this.handler = new AspNetCoreRequestHandler();
+            this.handler = new AspNetCoreRequestQueue();
             this.host = new ServiceHost(typeof(TService), baseAddresses);
         }
 
@@ -26,7 +26,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public AspNetCoreService(TService singletonInstance, params Uri[] baseAddresses)
         {
-            this.handler = new AspNetCoreRequestHandler();
+            this.handler = new AspNetCoreRequestQueue();
             this.singletonInstance = singletonInstance ?? throw new ArgumentNullException(nameof(singletonInstance));
             this.host = new ServiceHost(singletonInstance, baseAddresses);
         }

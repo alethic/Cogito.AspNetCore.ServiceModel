@@ -6,9 +6,13 @@
 
   <ItemGroup>
     <PackageReference Include="Cogito.Core" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Tpl.Dataflow" Version="4.5.24" />
+    <PackageReference Include="Nito.AsyncEx" Version="4.0.1" />
   </ItemGroup>
 
   <ItemGroup>

@@ -14,27 +14,27 @@ namespace Cogito.AspNetCore.ServiceModel
         RequestContext
     {
 
-        public override IAsyncResult BeginReply(Message message, AsyncCallback callback, object state)
+        public override sealed IAsyncResult BeginReply(Message message, AsyncCallback callback, object state)
         {
             return ReplyAsync(message).ToAsyncBegin(callback, state);
         }
 
-        public override IAsyncResult BeginReply(Message message, TimeSpan timeout, AsyncCallback callback, object state)
+        public override sealed IAsyncResult BeginReply(Message message, TimeSpan timeout, AsyncCallback callback, object state)
         {
             return ReplyAsync(message, timeout).ToAsyncBegin(callback, state);
         }
 
-        public override void EndReply(IAsyncResult result)
+        public override sealed void EndReply(IAsyncResult result)
         {
             ((Task)result).ToAsyncEnd();
         }
 
-        public override void Reply(Message message)
+        public override sealed void Reply(Message message)
         {
             ReplyAsync(message).Wait();
         }
 
-        public override void Reply(Message message, TimeSpan timeout)
+        public override sealed void Reply(Message message, TimeSpan timeout)
         {
             ReplyAsync(message, timeout).Wait();
         }
