@@ -421,7 +421,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         Uri ReadVia(HttpRequest request)
         {
-            return new Uri($"aspNetCore://{Environment.MachineName}{request.PathBase}{request.Path}");
+            return new Uri($"aspNetCore://{request.PathBase}{request.Path}");
         }
 
         /// <summary>

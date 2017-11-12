@@ -26,7 +26,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
             // start up service host
             var q = new AspNetCoreRequestQueue();
-            var u = new Uri($"aspnetcore://{Environment.MachineName}{path}");
+            var u = new Uri($"aspnetcore://{path}");
             var h = new ServiceHost(typeof(TService), u);
             h.AddServiceEndpoint(typeof(TContract), new AspNetCoreBasicBinding(), u);
             h.Description.Behaviors.Add(new AspNetCoreServiceBehavior(q));
