@@ -15,16 +15,23 @@ namespace Cogito.AspNetCore.ServiceModel
         IDisposable
     {
 
+        readonly Uri baseUri;
         readonly AsyncQueue<AspNetCoreRequest> buffer;
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
         /// <param name="buffer"></param>
-        public AspNetCoreRequestQueue()
+        public AspNetCoreRequestQueue(Uri baseUri)
         {
-            buffer = new AsyncQueue<AspNetCoreRequest>();
+            this.baseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
+            this.buffer = new AsyncQueue<AspNetCoreRequest>();
         }
+
+        /// <summary>
+        /// Gets the 'aspnetcore' scheme base URI this queue accepts messages for.
+        /// </summary>
+        public Uri BaseUri => baseUri;
 
         /// <summary>
         /// Closes the queue so no more requests can be processed.

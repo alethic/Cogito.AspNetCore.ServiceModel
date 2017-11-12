@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -12,7 +10,7 @@ namespace Cogito.AspNetCore.ServiceModel
         AsyncChannelListenerBase<IReplyChannel>
     {
 
-        readonly AspNetCoreRequestQueue queue;
+        readonly AspNetCoreRequestRouter router;
         readonly BufferManager bufferManager;
         readonly MessageEncoderFactory encoderFactory;
         readonly Uri uri;
@@ -20,19 +18,19 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        /// <param name="queue"></param>
+        /// <param name="router"></param>
         /// <param name="transportElement"></param>
         /// <param name="context"></param>
         public AspNetCoreReplyChannelListener(
-            AspNetCoreRequestQueue queue,
+            AspNetCoreRequestRouter router,
             AspNetCoreTransportBindingElement transportElement,
             BindingContext context) :
             base(context.Binding)
         {
-            this.queue = queue ?? throw new ArgumentNullException(nameof(queue));
+            this.router = router ?? throw new ArgumentNullException(nameof(router));
             this.bufferManager = BufferManager.CreateBufferManager(transportElement.MaxBufferPoolSize, (int)transportElement.MaxReceivedMessageSize);
             this.encoderFactory = context.BindingParameters.Remove<MessageEncodingBindingElement>().CreateMessageEncoderFactory();
-            this.uri = new Uri(context.ListenUriBaseAddress, context.ListenUriRelativeAddress);
+            this.uri = AspNetCoreUri.GetUri(context.ListenUriBaseAddress.AbsolutePath + context.ListenUriRelativeAddress);
         }
 
         /// <summary>
@@ -62,10 +60,9 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override async Task<IReplyChannel> OnAcceptChannelAsync(TimeSpan timeout)
         {
-            await Task.Delay(TimeSpan.FromSeconds(5));
-
+            await Task.Delay(TimeSpan.FromSeconds(1));
             return new AspNetCoreReplyChannel(
-                queue,
+                await router.GetQueueAsync(uri),
                 encoderFactory,
                 bufferManager,
                 new EndpointAddress(Uri),

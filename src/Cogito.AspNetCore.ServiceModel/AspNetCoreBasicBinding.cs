@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Configuration;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 
@@ -21,21 +20,6 @@ namespace Cogito.AspNetCore.ServiceModel
             base()
         {
             messageSecurityElement = new BasicHttpMessageSecurity();
-        }
-
-        /// <summary>
-        /// Initializes a new instance.
-        /// </summary>
-        /// <param name="configurationName"></param>
-        public AspNetCoreBasicBinding(string configurationName) :
-            this()
-        {
-            var section = (AspNetCoreBasicBindingCollectionElement)ConfigurationManager.GetSection("system.serviceModel/bindings/aspNetCoreBasicHttpBinding");
-            var element = section.Bindings[configurationName];
-            if (element == null)
-                throw new ConfigurationErrorsException($"There is no binding named {configurationName} at {section.BindingName}.");
-
-            element.ApplyConfiguration(this);
         }
 
         /// <summary>

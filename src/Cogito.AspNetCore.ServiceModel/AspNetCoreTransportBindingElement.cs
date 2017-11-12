@@ -70,11 +70,11 @@ namespace Cogito.AspNetCore.ServiceModel
             if (CanBuildChannelListener<TChannel>(context) == false)
                 throw new ArgumentException($"Unsupported channel type: {typeof(TChannel).Name}.");
 
-            var queue = context.BindingParameters.Find<AspNetCoreRequestQueue>();
-            if (queue == null)
-                throw new CommunicationException($"Unable to locate {nameof(AspNetCoreRequestQueue)} binding parameter.");
+            var router = context.BindingParameters.Find<AspNetCoreRequestRouter>();
+            if (router == null)
+                throw new CommunicationException($"Unable to locate {nameof(AspNetCoreRequestRouter)} binding parameter. Ensure the ServiceBehavior has been associated with the host.");
 
-            return (IChannelListener<TChannel>)new AspNetCoreReplyChannelListener(queue, this, context);
+            return (IChannelListener<TChannel>)new AspNetCoreReplyChannelListener(router, this, context);
         }
 
     }

@@ -14,20 +14,20 @@ namespace Cogito.AspNetCore.ServiceModel
         IServiceBehavior
     {
 
-        readonly AspNetCoreRequestQueue queue;
+        readonly AspNetCoreRequestRouter router;
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        /// <param name="queue"></param>
-        public AspNetCoreServiceBehavior(AspNetCoreRequestQueue queue)
+        /// <param name="router"></param>
+        public AspNetCoreServiceBehavior(AspNetCoreRequestRouter router)
         {
-            this.queue = queue ?? throw new ArgumentNullException(nameof(queue));
+            this.router = router ?? throw new ArgumentNullException(nameof(router));
         }
 
         public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase, Collection<ServiceEndpoint> endpoints, BindingParameterCollection bindingParameters)
         {
-            bindingParameters.Add(queue);
+            bindingParameters.Add(router);
         }
 
         public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)

@@ -31,7 +31,6 @@ namespace Cogito.AspNetCore.ServiceModel
             if (encoder == null)
                 throw new ArgumentNullException(nameof(encoder));
 
-
             return encoder.GetType().Name == "MtomMessageEncoder";
         }
 
@@ -347,6 +346,29 @@ namespace Cogito.AspNetCore.ServiceModel
             // apply properties
             ReadProperties(request, message);
 
+            // decide on the default port based on the schema
+            int DefaultPort()
+            {
+                switch (request.Scheme)
+                {
+                    case "http":
+                        return 80;
+                    case "https":
+                        return 443;
+                    default:
+                        return 80;
+                }
+            }
+
+            // encode raw request URL into Via
+            message.Properties.Via = new UriBuilder(
+                    request.Scheme,
+                    request.Host.Host,
+                    request.Host.Port ?? DefaultPort(),
+                    request.PathBase + request.Path,
+                    request.QueryString.Value)
+                .Uri;
+
             // check addressing version none requirements
             if (message.Version.Addressing == AddressingVersion.None)
             {
@@ -366,7 +388,8 @@ namespace Cogito.AspNetCore.ServiceModel
                     // handled
                 }
 
-                message.Headers.To = message.Properties.Via;
+                // override message to with ASP.Net core URI
+                message.Headers.To = AspNetCoreUri.GetUri(request.HttpContext);
             }
 
             // derive SOAP action
@@ -410,18 +433,7 @@ namespace Cogito.AspNetCore.ServiceModel
             // new ASP.Net core property
             var p2 = new AspNetCoreMessageProperty();
             p2.Context = request.HttpContext;
-
-            message.Properties.Via = ReadVia(request);
-        }
-
-        /// <summary>
-        /// Composes the url from the given request.
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        Uri ReadVia(HttpRequest request)
-        {
-            return new Uri($"aspNetCore://{request.PathBase}{request.Path}");
+            message.Properties.Add(AspNetCoreMessageProperty.Name, p2);
         }
 
         /// <summary>

@@ -71,12 +71,12 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override sealed IAsyncResult OnBeginOpen(TimeSpan timeout, AsyncCallback callback, object state)
         {
-            throw new NotImplementedException();
+            return OnOpenAsync(timeout).ToAsyncBegin(callback, state);
         }
 
         protected override sealed void OnEndOpen(IAsyncResult result)
         {
-            throw new NotImplementedException();
+            ((Task)result).ToAsyncEnd();
         }
 
         protected override sealed void OnOpen(TimeSpan timeout)
