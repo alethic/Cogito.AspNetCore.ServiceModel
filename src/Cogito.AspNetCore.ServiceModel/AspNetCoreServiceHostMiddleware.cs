@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Hosting;
@@ -38,7 +39,7 @@ namespace Cogito.AspNetCore.ServiceModel
             this.services = services ?? throw new ArgumentNullException(nameof(services));
             this.binding = binding ?? throw new ArgumentNullException(nameof(binding));
             this.router = new AspNetCoreRequestRouter();
-            this.baseUri = AspNetCoreUri.GetUri("/" + Guid.NewGuid().ToString("N"));
+            this.baseUri = AspNetCoreUri.GetUri("/" + Guid.NewGuid().ToString("N") + "/");
 
             // register for cleanup when application is stopped
             services.GetRequiredService<IApplicationLifetime>().ApplicationStopping.Register(() => host.Close());
@@ -60,6 +61,7 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             this.host = new ServiceHost(serviceType, baseUri);
             host.Description.Behaviors.Add(new AspNetCoreServiceBehavior(router));
+            host.Description.Behaviors.Add(new ServiceThrottlingBehavior() { MaxConcurrentSessions = 10 });
         }
 
         /// <summary>
@@ -110,12 +112,15 @@ namespace Cogito.AspNetCore.ServiceModel
         public async Task InvokeAsync(HttpContext context)
         {
             if (host.State == CommunicationState.Created)
+            {
                 await host.OpenAsync();
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
 
             if (host.State != CommunicationState.Opened)
                 throw new CommunicationException("ServiceHost is not open. Cannot route request.");
 
-            context.Items[AspNetCoreUri.UriContextItemName] = new Uri(baseUri, context.Request.Path);
+            context.Items[AspNetCoreUri.UriContextItemName] = new Uri(baseUri, context.Request.Path.Value.TrimStart('/'));
             await router.RunAsync(context);
         }
 

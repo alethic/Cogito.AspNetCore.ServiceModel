@@ -1,7 +1,9 @@
 ﻿using System;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using System.Threading;
 using System.Threading.Tasks;
+using Cogito.Threading;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -14,6 +16,10 @@ namespace Cogito.AspNetCore.ServiceModel
         readonly BufferManager bufferManager;
         readonly MessageEncoderFactory encoderFactory;
         readonly Uri uri;
+        readonly SemaphoreSlim sync;
+
+        // signal on close
+        CancellationTokenSource open;
 
         /// <summary>
         /// Initializes a new instance.
@@ -31,6 +37,7 @@ namespace Cogito.AspNetCore.ServiceModel
             this.bufferManager = BufferManager.CreateBufferManager(transportElement.MaxBufferPoolSize, (int)transportElement.MaxReceivedMessageSize);
             this.encoderFactory = context.BindingParameters.Remove<MessageEncodingBindingElement>().CreateMessageEncoderFactory();
             this.uri = AspNetCoreUri.GetUri(context.ListenUriBaseAddress.AbsolutePath + context.ListenUriRelativeAddress);
+            this.sync = new SemaphoreSlim(4);
         }
 
         /// <summary>
@@ -43,9 +50,21 @@ namespace Cogito.AspNetCore.ServiceModel
             return Task.FromResult(true);
         }
 
+        protected override void OnOpening()
+        {
+            base.OnOpening();
+            open = new CancellationTokenSource();
+        }
+
         protected override Task OnCloseAsync(TimeSpan timeout)
         {
             return Task.FromResult(true);
+        }
+
+        protected override void OnClosed()
+        {
+            base.OnClosed();
+            open.Cancel();
         }
 
         protected override void OnAbort()
@@ -60,13 +79,39 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override async Task<IReplyChannel> OnAcceptChannelAsync(TimeSpan timeout)
         {
-            await Task.Delay(TimeSpan.FromSeconds(1));
-            return new AspNetCoreReplyChannel(
-                await router.GetQueueAsync(uri),
-                encoderFactory,
-                bufferManager,
-                new EndpointAddress(Uri),
-                this);
+            if (State != CommunicationState.Opened)
+                return null;
+            if (open.IsCancellationRequested)
+                return null;
+
+            // maximum wait time
+            if (timeout.TotalMilliseconds > int.MaxValue)
+                timeout = TimeSpan.FromMilliseconds(int.MaxValue);
+
+            // wait for reply channel to become free
+            if (await sync.WaitAsync(timeout, open.Token) == false)
+                throw new TimeoutException("Unable to acquire ReplyChannel within allocated time.");
+
+            try
+            {
+                // generate new channel instance
+                var reply = new AspNetCoreReplyChannel(
+                    await router.GetQueueAsync(uri),
+                    encoderFactory,
+                    bufferManager,
+                    new EndpointAddress(Uri),
+                    this);
+
+                // when reply channel is closed, clear it out and signal next waiter
+                reply.Closed += (s, a) => { reply = null; sync.Release(); };
+
+                return reply;
+            }
+            catch
+            {
+                sync.Release();
+                throw;
+            }
         }
 
     }

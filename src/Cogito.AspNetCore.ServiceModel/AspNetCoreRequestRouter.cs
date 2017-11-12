@@ -75,14 +75,14 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Gets the queue for the given base URI.
         /// </summary>
-        /// <param name="baseUri"></param>
+        /// <param name="uri"></param>
         /// <returns></returns>
-        internal Task<AspNetCoreRequestQueue> GetQueueAsync(Uri baseUri)
+        internal Task<AspNetCoreRequestQueue> GetQueueAsync(Uri uri)
         {
-            if (baseUri == null)
-                throw new ArgumentNullException(nameof(baseUri));
+            if (uri == null)
+                throw new ArgumentNullException(nameof(uri));
 
-            return Task.FromResult(GetOrAdd(baseUri));
+            return Task.FromResult(GetOrAdd(uri));
         }
 
     }
