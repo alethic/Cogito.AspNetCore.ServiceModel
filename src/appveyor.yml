@@ -1,20 +1,25 @@
+image: Visual Studio 2017
+configuration: Release
+platform: Any CPU
+
+environment:
+  solution_file: src/Cogito.AspNetCore.ServiceModel.sln
+
+cache:
+  - src\packages -> src\**\packages.config
+
 install:
   - choco install gitversion.portable -pre -y
 
-image: Visual Studio 2017
-
-assembly_info:
-  patch: false
-
-init:
-  - gitversion /l console /output buildserver
-  - appveyor UpdateBuild -Version %
-    
-
 before_build:
-  - ps: cd src\
-  - nuget restore Cogito.AspNetCore.ServiceModel.sln
-  - ps: gitversion /l console /output buildserver
+  - gitversion /l console /output buildserver
+  - msbuild /t:Restore %solution_file%
 
-build:
-  project: Cogito.AspNetCore.ServiceModel.sln
+build_script:
+  - msbuild /t:Build %solution_file% /p:PackageVersion=%GitVersion_NuGetVersion% /p:AssemblyVersion=%GitVersion_AssemblySemVer% /p:InformationalVersion=%GitVersion_InformationalVersion%
+
+after_build:
+  - msbuild /t:Pack %solution_file% /p:PackageVersion=%GitVersion_NuGetVersion% /p:AssemblyVersion=%GitVersion_AssemblySemVer% /p:InformationalVersion=%GitVersion_InformationalVersion%
+
+artifacts:
+  - path: '**\*.nupkg'
