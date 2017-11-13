@@ -1,4 +1,5 @@
-﻿using System.ServiceModel.Channels;
+﻿using System;
+using System.ServiceModel.Channels;
 
 using Microsoft.AspNetCore.Http;
 
@@ -42,6 +43,11 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <see cref="HttpContext"/> associated with the request/reply.
         /// </summary>
         public HttpContext Context { get; internal set; }
+
+        /// <summary>
+        /// Gets the internal routing URI.
+        /// </summary>
+        public Uri RoutingUri => AspNetCoreUri.GetUri(Context);
 
     }
 

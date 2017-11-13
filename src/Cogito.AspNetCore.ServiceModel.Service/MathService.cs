@@ -1,4 +1,6 @@
-﻿namespace Cogito.AspNetCore.ServiceModel.Service
+﻿using System.ServiceModel;
+
+namespace Cogito.AspNetCore.ServiceModel.Service
 {
 
 
@@ -8,7 +10,9 @@
 
         public int Add(int x, int y)
         {
+            var p =OperationContext.Current.IncomingMessageProperties;
             return x + y;
+
         }
 
     }

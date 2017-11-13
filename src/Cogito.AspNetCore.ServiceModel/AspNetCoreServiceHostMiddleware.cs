@@ -120,7 +120,7 @@ namespace Cogito.AspNetCore.ServiceModel
             if (host.State != CommunicationState.Opened)
                 throw new CommunicationException("ServiceHost is not open. Cannot route request.");
 
-            context.Items[AspNetCoreUri.UriContextItemName] = new Uri(baseUri, context.Request.Path.Value.TrimStart('/'));
+            context.Items[AspNetCoreUri.UriContextItemName] = new Uri(baseUri, context.Request.Path.Value?.TrimStart('/') ?? PathString.Empty);
             await router.RunAsync(context);
         }
 
