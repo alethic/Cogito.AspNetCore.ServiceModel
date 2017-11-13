@@ -69,7 +69,7 @@ namespace Cogito.AspNetCore.ServiceModel
             if (options.ServiceType == null)
                 throw new ArgumentException("Must specify ServiceType in options.", nameof(options));
 
-            return app.UseServiceHost(options);
+            return app.UseServiceHost(PathString.Empty, options);
         }
 
         /// <summary>
@@ -116,11 +116,7 @@ namespace Cogito.AspNetCore.ServiceModel
             if (serviceType == null)
                 throw new ArgumentNullException(nameof(serviceType));
 
-            return app.UseServiceHost(new AspNetCoreServiceHostOptions()
-            {
-                ServiceType = serviceType,
-                Configure = configure,
-            });
+            return app.UseServiceHost(PathString.Empty, serviceType, configure);
         }
 
         /// <summary>
@@ -153,7 +149,7 @@ namespace Cogito.AspNetCore.ServiceModel
             this IApplicationBuilder app,
             Action<AspNetCoreServiceHostConfigurator> configure = null)
         {
-            return app.UseServiceHost(typeof(TService), configure);
+            return app.UseServiceHost<TService>(PathString.Empty, configure);
         }
 
         /// <summary>
@@ -186,7 +182,7 @@ namespace Cogito.AspNetCore.ServiceModel
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
 
-            return app.UseServiceHost<TService>(configure => configure.AddServiceEndpoint<TContract>());
+            return app.UseServiceHost<TService, TContract>(PathString.Empty);
         }
 
     }
