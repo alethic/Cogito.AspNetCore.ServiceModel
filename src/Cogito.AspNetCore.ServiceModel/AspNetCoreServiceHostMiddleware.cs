@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ServiceModel;
+using System.ServiceModel.Activation;
 using System.ServiceModel.Description;
 using System.Threading.Tasks;
 
@@ -82,6 +83,11 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             options.Value.Configure?.Invoke(new AspNetCoreServiceHostConfigurator(this));
         }
+
+        /// <summary>
+        /// Gets a reference to the service host.
+        /// </summary>
+        internal ServiceHost ServiceHost => host;
 
         /// <summary>
         /// Registers a new service endpoint.

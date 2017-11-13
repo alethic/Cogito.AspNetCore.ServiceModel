@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ServiceModel;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -43,6 +44,11 @@ namespace Cogito.AspNetCore.ServiceModel
             middleware.AddServiceEndpoint(contractType, relativePath);
             return this;
         }
+
+        /// <summary>
+        /// Gets a reference to the service host.
+        /// </summary>
+        public ServiceHost ServiceHost  => middleware.ServiceHost;
 
     }
 
