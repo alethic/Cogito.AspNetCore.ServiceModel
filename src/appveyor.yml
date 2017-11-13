@@ -12,8 +12,9 @@ init:
     
 
 before_build:
-  - nuget restore src\Cogito.AspNetCore.ServiceModel.sln
+  - ps: cd src\
+  - nuget restore Cogito.AspNetCore.ServiceModel.sln
   - ps: gitversion /l console /output buildserver
 
 build:
-  project: src\Cogito.AspNetCore.ServiceModel.sln
+  project: Cogito.AspNetCore.ServiceModel.sln
