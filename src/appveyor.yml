@@ -7,7 +7,7 @@ assembly_info:
   patch: false
 
 before_build:
-  - nuget restore
+  - nuget restore src/Cogito.AspNetCore.ServiceModel.sln
   - ps: gitversion /l console /output buildserver
 
 build:
