@@ -110,8 +110,6 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
-            if (path == null)
-                throw new ArgumentNullException(nameof(path));
 
             return app.UseServiceHost<TService>(path, configure => configure.AddServiceEndpoint<TContract>());
         }
