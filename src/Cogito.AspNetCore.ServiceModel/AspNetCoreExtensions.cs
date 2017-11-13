@@ -56,6 +56,27 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="app"></param>
         /// <param name="path"></param>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost(
+            this IApplicationBuilder app,
+            AspNetCoreServiceHostOptions options)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+            if (options == null)
+                throw new ArgumentNullException(nameof(options));
+            if (options.ServiceType == null)
+                throw new ArgumentException("Must specify ServiceType in options.", nameof(options));
+
+            return app.UseServiceHost(options);
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="path"></param>
         /// <param name="serviceType"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
@@ -71,6 +92,31 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new ArgumentNullException(nameof(serviceType));
 
             return app.UseServiceHost(path, new AspNetCoreServiceHostOptions()
+            {
+                ServiceType = serviceType,
+                Configure = configure,
+            });
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="path"></param>
+        /// <param name="serviceType"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost(
+            this IApplicationBuilder app,
+            Type serviceType,
+            Action<AspNetCoreServiceHostConfigurator> configure = null)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+            if (serviceType == null)
+                throw new ArgumentNullException(nameof(serviceType));
+
+            return app.UseServiceHost(new AspNetCoreServiceHostOptions()
             {
                 ServiceType = serviceType,
                 Configure = configure,
@@ -97,6 +143,20 @@ namespace Cogito.AspNetCore.ServiceModel
         }
 
         /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path and hosts the specified service.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <param name="app"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost<TService>(
+            this IApplicationBuilder app,
+            Action<AspNetCoreServiceHostConfigurator> configure = null)
+        {
+            return app.UseServiceHost(typeof(TService), configure);
+        }
+
+        /// <summary>
         /// Wires up the AspNetCore WCF framework to the given path and hosts the specified service and contract type.
         /// </summary>
         /// <typeparam name="TService"></typeparam>
@@ -112,6 +172,21 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new ArgumentNullException(nameof(app));
 
             return app.UseServiceHost<TService>(path, configure => configure.AddServiceEndpoint<TContract>());
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path and hosts the specified service and contract type.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="app"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost<TService, TContract>(this IApplicationBuilder app)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+
+            return app.UseServiceHost<TService>(configure => configure.AddServiceEndpoint<TContract>());
         }
 
     }
