@@ -40,14 +40,15 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
-            if (path == null)
-                throw new ArgumentNullException(nameof(path));
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
             if (options.ServiceType == null)
                 throw new ArgumentException("Must specify ServiceType in options.", nameof(options));
 
-            return app.Map(path, x => x.UseMiddleware<AspNetCoreServiceHostMiddleware>(Options.Create(options)));
+            if (path.HasValue)
+                return app.Map(path, x => x.UseMiddleware<AspNetCoreServiceHostMiddleware>(Options.Create(options)));
+            else
+                return app.UseMiddleware<AspNetCoreServiceHostMiddleware>(Options.Create(options));
         }
 
         /// <summary>
@@ -66,8 +67,6 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
-            if (path == null)
-                throw new ArgumentNullException(nameof(path));
             if (serviceType == null)
                 throw new ArgumentNullException(nameof(serviceType));
 
@@ -93,8 +92,6 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
-            if (path == null)
-                throw new ArgumentNullException(nameof(path));
 
             return app.UseServiceHost(path, typeof(TService), configure);
         }
