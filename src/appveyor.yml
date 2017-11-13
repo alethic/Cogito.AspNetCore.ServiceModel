@@ -6,9 +6,14 @@ image: Visual Studio 2017
 assembly_info:
   patch: false
 
+init:
+  - gitversion /l console /output buildserver
+  - appveyor UpdateBuild -Version %
+    
+
 before_build:
-  - nuget restore src/Cogito.AspNetCore.ServiceModel.sln
+  - nuget restore src\Cogito.AspNetCore.ServiceModel.sln
   - ps: gitversion /l console /output buildserver
 
 build:
-  project: src/Cogito.AspNetCore.ServiceModel.sln
+  project: src\Cogito.AspNetCore.ServiceModel.sln
