@@ -63,9 +63,6 @@ namespace Cogito.AspNetCore.ServiceModel
             this.host = new ServiceHost(serviceType, baseUri);
             host.Description.Behaviors.Add(new AspNetCoreServiceBehavior(router));
             host.Description.Behaviors.Add(new ServiceThrottlingBehavior() { MaxConcurrentSessions = 10 });
-
-            var debug = host.Description.Behaviors.Find<ServiceDebugBehavior>();
-            debug.IncludeExceptionDetailInFaults = true;
         }
 
         /// <summary>

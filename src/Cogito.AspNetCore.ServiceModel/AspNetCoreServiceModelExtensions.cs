@@ -15,7 +15,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="self"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public static TProperty GetValue<TProperty>(this MessageProperties self, string name)
+        internal static TProperty GetValue<TProperty>(this MessageProperties self, string name)
             where TProperty : class
         {
             return self.TryGetValue(name, out var value) ? (TProperty)value : null;
@@ -26,7 +26,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="self"></param>
         /// <returns></returns>
-        public static Task OpenAsync(this ICommunicationObject self)
+        internal static Task OpenAsync(this ICommunicationObject self)
         {
             return Task.Factory.FromAsync(self.BeginOpen, self.EndOpen, null);
         }
@@ -36,7 +36,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="self"></param>
         /// <returns></returns>
-        public static Task CloseAsync(this ICommunicationObject self)
+        internal static Task CloseAsync(this ICommunicationObject self)
         {
             return Task.Factory.FromAsync(self.BeginClose, self.EndClose, null);
         }

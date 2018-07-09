@@ -11,7 +11,7 @@ namespace Cogito.AspNetCore.ServiceModel
     /// <summary>
     /// Holds various information regarding the ASP.Net Core integration.
     /// </summary>
-    public class AspNetCoreMessageProperty
+    class AspNetCoreMessageProperty
     {
 
         /// <summary>
@@ -22,21 +22,21 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Gets the value of the <see cref="AspNetCoreMessageProperty"/>.
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="properties"></param>
         /// <returns></returns>
-        public static AspNetCoreMessageProperty GetValue(Message message)
+        public static AspNetCoreMessageProperty GetValue(MessageProperties properties)
         {
-            return message.Properties.GetValue<AspNetCoreMessageProperty>(Name);
+            return properties.GetValue<AspNetCoreMessageProperty>(Name);
         }
 
         /// <summary>
         /// Gets or adds the <see cref="AspNetCoreMessageProperty"/> to the message.
         /// </summary>
-        /// <param name="message"></param>
+        /// <param name="properties"></param>
         /// <returns></returns>
-        public static AspNetCoreMessageProperty GetOrAdd(Message message)
+        public static AspNetCoreMessageProperty GetOrAdd(MessageProperties properties)
         {
-            return (AspNetCoreMessageProperty)message.Properties.GetOrAdd(Name, _ => new AspNetCoreMessageProperty());
+            return (AspNetCoreMessageProperty)properties.GetOrAdd(Name, _ => new AspNetCoreMessageProperty());
         }
 
         /// <summary>
