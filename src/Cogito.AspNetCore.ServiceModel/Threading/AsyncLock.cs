@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Cogito.AspNetCore.ServiceModel
+namespace Cogito.AspNetCore.ServiceModel.Threading
 {
 
     class AsyncLock
