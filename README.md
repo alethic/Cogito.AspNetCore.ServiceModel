@@ -27,5 +27,3 @@ A custom baseUri is established with a custom scheme: `aspnetcore`. Service endp
 This lets us use the existing `ServiceHost` class. And thus eventually piggyback on existing `ServiceHost` extensions: like Autofac integration. And it keeps the dispatch/contract discovery stuff in WCF. The only unfortunate part about this is `ServiceHost` is kind of heavy. Seems to spawn a lot of channel listeners, and invoke `OnBeginAccept` a lot. So, we're using semaphores to lease those out.
 
 Also, I'm using completely custom bindings. `BasicHttpBinding` is not used, of course. `AspNetCoreBasicBinding` is instead doing the same setup. I want a `AspnetCoreWSBinding`!
-
-MTOM encoding needs to be fixed. It looks like `MtomEncoder` from WCF is pretty much completely internal. No good way to grab the boundary stuff.
