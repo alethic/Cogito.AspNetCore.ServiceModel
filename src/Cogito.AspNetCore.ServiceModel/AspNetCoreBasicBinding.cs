@@ -8,7 +8,7 @@ namespace Cogito.AspNetCore.ServiceModel
 {
 
     public class AspNetCoreBasicBinding :
-        AspNetCoreBindingBase
+        AspNetCoreBinding
     {
 
         readonly BasicHttpMessageSecurity messageSecurityElement;

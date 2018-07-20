@@ -5,7 +5,10 @@ using System.ServiceModel.Channels;
 namespace Cogito.AspNetCore.ServiceModel
 {
 
-    public abstract class AspNetCoreBindingBase :
+    /// <summary>
+    /// Abstract ASP.Net Core Binding implementation.
+    /// </summary>
+    public abstract class AspNetCoreBinding :
         Binding
     {
 
@@ -17,7 +20,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// Initializes a new instance.
         /// </summary>
         /// <param name="incoming"></param>
-        protected AspNetCoreBindingBase()
+        protected AspNetCoreBinding()
         {
             this.transport = new AspNetCoreTransportBindingElement();
             this.textEncoding = new TextMessageEncodingBindingElement();

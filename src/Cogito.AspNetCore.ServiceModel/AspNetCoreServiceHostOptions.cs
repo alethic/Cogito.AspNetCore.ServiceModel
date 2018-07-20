@@ -3,6 +3,9 @@
 namespace Cogito.AspNetCore.ServiceModel
 {
 
+    /// <summary>
+    /// Options for configuration of the ASP.Net Core WCF service host.
+    /// </summary>
     public class AspNetCoreServiceHostOptions
     {
 
@@ -12,9 +15,10 @@ namespace Cogito.AspNetCore.ServiceModel
         public Type ServiceType { get; set; }
 
         /// <summary>
-        /// Binding to host service type with.
+        /// Callback to return the binding to configure the service with.
         /// </summary>
-        public Type BindingType { get; set; }
+        public Func<IServiceProvider, AspNetCoreBinding> Binding { get; set; } =
+            services => (AspNetCoreBinding)services.GetService(typeof(AspNetCoreBasicBinding));
 
         /// <summary>
         /// Configurator to apply optional configuration.

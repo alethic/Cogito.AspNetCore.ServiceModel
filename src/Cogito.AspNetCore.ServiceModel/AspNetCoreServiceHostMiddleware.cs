@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ServiceModel;
-using System.ServiceModel.Activation;
 using System.ServiceModel.Description;
 using System.Threading.Tasks;
 
@@ -20,7 +19,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         readonly RequestDelegate next;
         readonly IServiceProvider services;
-        readonly AspNetCoreBindingBase binding;
+        readonly AspNetCoreBinding binding;
         readonly AspNetCoreRequestRouter router;
         readonly ServiceHost host;
         readonly Uri baseUri;
@@ -34,7 +33,7 @@ namespace Cogito.AspNetCore.ServiceModel
         AspNetCoreServiceHostMiddleware(
             RequestDelegate next,
             IServiceProvider services,
-            AspNetCoreBindingBase binding)
+            AspNetCoreBinding binding)
         {
             this.next = next;
             this.services = services ?? throw new ArgumentNullException(nameof(services));
@@ -57,7 +56,7 @@ namespace Cogito.AspNetCore.ServiceModel
             RequestDelegate next,
             IServiceProvider services,
             Type serviceType,
-            AspNetCoreBindingBase binding) :
+            AspNetCoreBinding binding) :
             this(next, services, binding)
         {
             this.host = new ServiceHost(serviceType, baseUri);
@@ -79,7 +78,7 @@ namespace Cogito.AspNetCore.ServiceModel
                 next,
                 services,
                 options.Value.ServiceType,
-                (AspNetCoreBindingBase)services.GetService(options.Value.BindingType ?? typeof(AspNetCoreBasicBinding)))
+                options.Value.Binding.Invoke(services))
         {
             options.Value.Configure?.Invoke(new AspNetCoreServiceHostConfigurator(this));
         }
