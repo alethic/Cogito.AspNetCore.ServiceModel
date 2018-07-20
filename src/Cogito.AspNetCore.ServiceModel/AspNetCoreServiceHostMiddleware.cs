@@ -125,8 +125,12 @@ namespace Cogito.AspNetCore.ServiceModel
             if (host.State != CommunicationState.Opened)
                 throw new CommunicationException("ServiceHost is not open. Cannot route request.");
 
+            // dispatch request to router, which sends to service host
             context.Items[AspNetCoreUri.UriContextItemName] = new Uri(baseUri, context.Request.Path.Value?.TrimStart('/') ?? PathString.Empty);
             await router.RunAsync(context);
+
+            // continue with pipe
+            await next?.Invoke(context);
         }
 
     }
