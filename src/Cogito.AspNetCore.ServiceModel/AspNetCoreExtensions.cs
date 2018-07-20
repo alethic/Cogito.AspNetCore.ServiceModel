@@ -23,6 +23,7 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new ArgumentNullException(nameof(services));
 
             services.AddTransient<AspNetCoreBasicBinding>();
+            services.AddTransient<AspNetCoreBasicMtomBinding>();
             return services;
         }
 
@@ -177,7 +178,8 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <typeparam name="TContract"></typeparam>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseServiceHost<TService, TContract>(this IApplicationBuilder app)
+        public static IApplicationBuilder UseServiceHost<TService, TContract>(
+            this IApplicationBuilder app)
         {
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
