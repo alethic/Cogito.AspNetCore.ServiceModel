@@ -7,7 +7,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.AspNetCore.ServiceMo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.AspNetCore.ServiceModel.Service", "Cogito.AspNetCore.ServiceModel.Service\Cogito.AspNetCore.ServiceModel.Service.csproj", "{7F9124FA-BE0D-40A3-9FEB-36B910E2D420}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cogito.AspNetCore.ServiceModel.Tests", "Cogito.AspNetCore.ServiceModel.Tests\Cogito.AspNetCore.ServiceModel.Tests.csproj", "{34161F71-F38C-4660-9300-04830DDF624E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Cogito.AspNetCore.ServiceModel.Tests", "Cogito.AspNetCore.ServiceModel.Tests\Cogito.AspNetCore.ServiceModel.Tests.csproj", "{34161F71-F38C-4660-9300-04830DDF624E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{15A1FD57-A78B-4F29-8110-DB4C2AF04F29}"
+	ProjectSection(SolutionItems) = preProject
+		..\README.md = ..\README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
