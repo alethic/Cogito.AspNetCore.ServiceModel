@@ -70,7 +70,6 @@ namespace Cogito.AspNetCore.ServiceModel
                 var sw = new Stopwatch();
                 sw.Start();
                 var ms = await buffer.DequeueAsync(new CancellationTokenSource(timeout).Token);
-                Console.WriteLine(sw.Elapsed);
                 return ms;
             }
             catch (OperationCanceledException e)

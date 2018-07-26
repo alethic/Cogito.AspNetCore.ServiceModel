@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using System.Xml;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -27,6 +28,13 @@ namespace Cogito.AspNetCore.ServiceModel
             this.textEncoding.MessageVersion = MessageVersion.Soap11;
             this.mtomEncoding = new MtomMessageEncodingBindingElement();
             this.mtomEncoding.MessageVersion = MessageVersion.Soap11;
+
+            // default to MTOM defaults
+            textEncoding.ReaderQuotas = mtomEncoding.ReaderQuotas;
+            textEncoding.MaxReadPoolSize = mtomEncoding.MaxReadPoolSize;
+            textEncoding.MaxWritePoolSize = mtomEncoding.MaxWritePoolSize;
+            textEncoding.MessageVersion = mtomEncoding.MessageVersion;
+            textEncoding.WriteEncoding = mtomEncoding.WriteEncoding;
         }
 
         /// <summary>
@@ -61,6 +69,24 @@ namespace Cogito.AspNetCore.ServiceModel
         }
 
         /// <summary>
+        /// Gets or sets the maximum size, in bytes, of any buffer pools used by the transport.
+        /// </summary>
+        public long MaxBufferPoolSize
+        {
+            get { return transport.MaxBufferPoolSize; }
+            set { transport.MaxBufferPoolSize = value; }
+        }
+
+        /// <summary>
+        /// Gets and sets the maximum allowable message size, in bytes, that can be received.
+        /// </summary>
+        public long MaxReceivedMessageSize
+        {
+            get { return transport.MaxReceivedMessageSize; }
+            set { transport.MaxReceivedMessageSize = value; }
+        }
+
+        /// <summary>
         /// Maximum size of a fault message.
         /// </summary>
         [DefaultValue(AspNetCoreTransportDefaults.MaxFaultSize)]
@@ -68,6 +94,33 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             get { return transport.MaxFaultSize; }
             set { transport.MaxFaultSize = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of readers that are allocated to a pool and ready for use to process incoming messages.
+        /// </summary>
+        public int MaxReadPoolSize
+        {
+            get { return textEncoding.MaxReadPoolSize; }
+            set { textEncoding.MaxReadPoolSize = mtomEncoding.MaxReadPoolSize = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of writers that are allocated to a pool and ready for use to process outgoing messages.
+        /// </summary>
+        public int MaxWritePoolSize
+        {
+            get { return textEncoding.MaxWritePoolSize; }
+            set { textEncoding.MaxWritePoolSize = mtomEncoding.MaxWritePoolSize = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets constraints on the complexity of XML messages that can be processed by endpoints configured
+        /// with this binding.
+        /// </summary>
+        public XmlDictionaryReaderQuotas ReaderQuotas
+        {
+            get { return mtomEncoding.ReaderQuotas; }
         }
 
         /// <summary>
