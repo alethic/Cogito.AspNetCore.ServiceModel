@@ -18,6 +18,7 @@ namespace Cogito.AspNetCore.ServiceModel.Service
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseDeveloperExceptionPage();
+
             app.UseServiceHost<MathService>("", configure =>
             {
                 configure.AddServiceEndpoint<IMathService>("");

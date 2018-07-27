@@ -128,9 +128,6 @@ namespace Cogito.AspNetCore.ServiceModel
             // dispatch request to router, which sends to service host
             context.Items[AspNetCoreUri.UriContextItemName] = new Uri(baseUri, context.Request.Path.Value?.TrimStart('/') ?? PathString.Empty);
             await router.RunAsync(context);
-
-            // continue with pipe
-            await next?.Invoke(context);
         }
 
     }
