@@ -5,14 +5,14 @@ using System.Net.Mime;
 using System.Reflection;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
-
 using Cogito.AspNetCore.ServiceModel.IO;
+
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Internal;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -138,17 +138,7 @@ namespace Cogito.AspNetCore.ServiceModel
         protected override Task<bool> WaitForRequestAsync(TimeSpan timeout)
         {
             ThrowIfDisposedOrNotOpen();
-            return Task.FromResult(true);
-        }
-
-        /// <summary>
-        /// Normalizes a timeout.
-        /// </summary>
-        /// <param name="timeout"></param>
-        /// <returns></returns>
-        CancellationToken FromTimeOut(TimeSpan timeout)
-        {
-            return new CancellationTokenSource(TimeSpan.FromMilliseconds(System.Math.Min(int.MaxValue, timeout.TotalMilliseconds))).Token;
+            return queue.WaitForRequestAsync(timeout);
         }
 
         /// <summary>
@@ -481,8 +471,6 @@ namespace Cogito.AspNetCore.ServiceModel
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            var action = message.Headers.Action;
-
             if (message.Version.Addressing == AddressingVersion.None)
             {
                 message.Headers.Action = null;
@@ -507,8 +495,26 @@ namespace Cogito.AspNetCore.ServiceModel
                 response.ContentType = null;
             }
 
+            // message contains HTTP specific information
+            if (message.Properties.TryGetValue(HttpResponseMessageProperty.Name, out var o) && o is HttpResponseMessageProperty property)
+            {
+                response.StatusCode = (int)property.StatusCode;
+
+                // add custom response reason if supported
+                var responseFeature = response.HttpContext.Features.Get<IHttpResponseFeature>();
+                if (responseFeature != null)
+                    responseFeature.ReasonPhrase = property.StatusDescription;
+
+                // apply outgoing headers
+                foreach (string name in property.Headers.Keys)
+                {
+                    response.Headers.Remove(name);
+                    response.Headers.Add(name, property.Headers[name]);
+                }
+            }
+
             if (message.IsEmpty == false)
-                await WriteMessageBodyAsync(response, message);
+                await WriteMessageBodyAsync(response, message).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -524,7 +530,7 @@ namespace Cogito.AspNetCore.ServiceModel
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            await Task.Factory.FromAsync(encoder.BeginWriteMessage, encoder.EndWriteMessage, message, response.Body, null);
+            await Task.Factory.FromAsync(encoder.BeginWriteMessage, encoder.EndWriteMessage, message, response.Body, null).ConfigureAwait(false);
         }
 
     }

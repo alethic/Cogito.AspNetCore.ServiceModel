@@ -32,10 +32,11 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));
-            if (uri.Scheme != AspNetCoreUri.Scheme)
-                throw new ArgumentException($"Routing URI scheme must be {AspNetCoreUri.Scheme}.", nameof(uri));
+            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+                throw new ArgumentException($"Routing URI scheme must be {Uri.UriSchemeHttp} or {Uri.UriSchemeHttps}.", nameof(uri));
 
-            return queues.GetOrAdd(uri, _ => new AspNetCoreRequestQueue(_));
+            lock (queues)
+                return queues.GetOrAdd(uri, _ => new AspNetCoreRequestQueue());
         }
 
         /// <summary>
@@ -47,10 +48,11 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));
-            if (uri.Scheme != AspNetCoreUri.Scheme)
-                throw new ArgumentException($"Routing URI scheme must be {AspNetCoreUri.Scheme}.", nameof(uri));
+            if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+                throw new ArgumentException($"Routing URI scheme must be {Uri.UriSchemeHttp} or {Uri.UriSchemeHttps}.", nameof(uri));
 
-            return queues.TryGetValue(uri, out var queue) ? queue : null;
+            lock (queues)
+                return queues.TryGetValue(uri, out var queue) ? queue : null;
         }
 
         /// <summary>

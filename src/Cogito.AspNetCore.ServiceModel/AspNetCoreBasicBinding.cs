@@ -16,8 +16,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        public AspNetCoreBasicBinding() :
-            base()
+        public AspNetCoreBasicBinding(bool secure = false) : base(secure)
         {
             messageSecurityElement = new BasicHttpMessageSecurity();
         }

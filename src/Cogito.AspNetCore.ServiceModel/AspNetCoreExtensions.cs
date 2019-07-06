@@ -22,8 +22,8 @@ namespace Cogito.AspNetCore.ServiceModel
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
-            services.AddTransient<AspNetCoreBasicBinding>();
-            services.AddTransient<AspNetCoreBasicMtomBinding>();
+            services.AddSingleton<AspNetCoreRequestRouter>();
+            services.AddTransient<AspNetCoreBindingFactory>();
             return services;
         }
 

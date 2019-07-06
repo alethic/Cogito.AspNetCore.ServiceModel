@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 using Microsoft.AspNetCore.Http;
 
@@ -15,23 +16,16 @@ namespace Cogito.AspNetCore.ServiceModel
         IDisposable
     {
 
-        readonly Uri baseUri;
-        readonly AsyncQueue<AspNetCoreRequest> buffer;
+        readonly BufferBlock<AspNetCoreRequest> buffer;
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
         /// <param name="buffer"></param>
-        public AspNetCoreRequestQueue(Uri baseUri)
+        public AspNetCoreRequestQueue()
         {
-            this.baseUri = baseUri ?? throw new ArgumentNullException(nameof(baseUri));
-            this.buffer = new AsyncQueue<AspNetCoreRequest>();
+            this.buffer = new BufferBlock<AspNetCoreRequest>();
         }
-
-        /// <summary>
-        /// Gets the 'aspnetcore' scheme base URI this queue accepts messages for.
-        /// </summary>
-        public Uri BaseUri => baseUri;
 
         /// <summary>
         /// Closes the queue so no more requests can be processed.
@@ -39,8 +33,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         public void Close()
         {
-            if (!buffer.IsCompleted)
-                buffer.Complete();
+            buffer.Complete();
         }
 
         /// <summary>
@@ -51,9 +44,24 @@ namespace Cogito.AspNetCore.ServiceModel
         public async Task SendAsync(HttpContext context)
         {
             var request = new AspNetCoreRequest(context);
-            buffer.Enqueue(request);
+
+            // ensure data makes it into buffer
+            while (!await buffer.SendAsync(request))
+                await Task.Yield();
+
+            // wait for completion of request
             await request.Task;
         }
+
+        /// <summary>
+        /// Waits until a new request is available to be processed.
+        /// </summary>
+        /// <param name="timeout"></param>
+        /// <returns></returns>
+        internal async Task<bool> WaitForRequestAsync(TimeSpan timeout)
+        {
+            return await buffer.OutputAvailableAsync(new CancellationTokenSource(timeout).Token);
+        }   
 
         /// <summary>
         /// Receives the next request or waits for a timeout.
@@ -69,7 +77,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
                 var sw = new Stopwatch();
                 sw.Start();
-                var ms = await buffer.DequeueAsync(new CancellationTokenSource(timeout).Token);
+                var ms = await buffer.ReceiveAsync(timeout);
                 return ms;
             }
             catch (OperationCanceledException e)

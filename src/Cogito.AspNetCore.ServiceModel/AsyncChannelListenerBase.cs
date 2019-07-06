@@ -47,7 +47,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override sealed TChannel OnAcceptChannel(TimeSpan timeout)
         {
-            return OnAcceptChannelAsync(timeout).Result;
+            return OnAcceptChannelAsync(timeout).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected abstract Task<TChannel> OnAcceptChannelAsync(TimeSpan timeout);
@@ -64,7 +64,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override sealed bool OnWaitForChannel(TimeSpan timeout)
         {
-            return OnWaitForChannelAsync(timeout).Result;
+            return OnWaitForChannelAsync(timeout).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected abstract Task<bool> OnWaitForChannelAsync(TimeSpan timeout);
@@ -81,7 +81,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override sealed void OnOpen(TimeSpan timeout)
         {
-            OnOpenAsync(timeout).Wait();
+            OnOpenAsync(timeout).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected abstract Task OnOpenAsync(TimeSpan timeout);
@@ -98,7 +98,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override sealed void OnClose(TimeSpan timeout)
         {
-            OnCloseAsync(timeout).Wait();
+            OnCloseAsync(timeout).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected abstract Task OnCloseAsync(TimeSpan timeout);

@@ -1,4 +1,5 @@
 ﻿using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace Cogito.AspNetCore.ServiceModel.Service
 {
@@ -8,7 +9,7 @@ namespace Cogito.AspNetCore.ServiceModel.Service
     {
 
         [OperationContract(Action = "Add")]
-        int Add(int x, int y);
+        Task<int> Add(int x, int y);
 
     }
 

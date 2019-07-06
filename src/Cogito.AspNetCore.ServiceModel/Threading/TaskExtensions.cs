@@ -76,7 +76,7 @@ namespace Cogito.AspNetCore.ServiceModel.Threading
             if (task == null)
                 throw new ArgumentNullException(nameof(task));
 
-            return task.GetAwaiter().GetResult();
+            return task.ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Cogito.AspNetCore.ServiceModel.Threading
             if (task == null)
                 throw new ArgumentNullException(nameof(task));
 
-            task.GetAwaiter().GetResult();
+            task.ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
     }

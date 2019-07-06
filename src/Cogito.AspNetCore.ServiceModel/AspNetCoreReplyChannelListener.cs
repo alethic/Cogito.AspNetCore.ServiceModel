@@ -15,7 +15,6 @@ namespace Cogito.AspNetCore.ServiceModel
         readonly BufferManager bufferManager;
         readonly MessageEncoderFactory encoderFactory;
         readonly Uri uri;
-        readonly SemaphoreSlim sync;
 
         // signal on close
         CancellationTokenSource open;
@@ -35,8 +34,7 @@ namespace Cogito.AspNetCore.ServiceModel
             this.router = router ?? throw new ArgumentNullException(nameof(router));
             this.bufferManager = BufferManager.CreateBufferManager(transportElement.MaxBufferPoolSize, (int)transportElement.MaxReceivedMessageSize);
             this.encoderFactory = context.BindingParameters.Remove<MessageEncodingBindingElement>().CreateMessageEncoderFactory();
-            this.uri = AspNetCoreUri.GetUri(context.ListenUriBaseAddress.AbsolutePath + context.ListenUriRelativeAddress);
-            this.sync = new SemaphoreSlim(5);
+            this.uri = new Uri(context.ListenUriBaseAddress, context.ListenUriRelativeAddress);
         }
 
         /// <summary>
@@ -71,9 +69,9 @@ namespace Cogito.AspNetCore.ServiceModel
 
         }
 
-        protected override Task<bool> OnWaitForChannelAsync(TimeSpan timeout)
+        protected override async Task<bool> OnWaitForChannelAsync(TimeSpan timeout)
         {
-            return Task.FromResult(true);
+            return await (await router.GetQueueAsync(uri)).WaitForRequestAsync(timeout);
         }
 
         protected override async Task<IReplyChannel> OnAcceptChannelAsync(TimeSpan timeout)
@@ -87,9 +85,9 @@ namespace Cogito.AspNetCore.ServiceModel
             if (timeout.TotalMilliseconds > int.MaxValue)
                 timeout = TimeSpan.FromMilliseconds(int.MaxValue);
 
-            // wait for reply channel to become free
-            if (await sync.WaitAsync(timeout, open.Token) == false)
-                throw new TimeoutException("Unable to acquire ReplyChannel within allocated time.");
+            // wait until a channel is available
+            if (await OnWaitForChannelAsync(timeout) == false)
+                return null;
 
             try
             {
@@ -102,13 +100,12 @@ namespace Cogito.AspNetCore.ServiceModel
                     this);
 
                 // when reply channel is closed, clear it out and signal next waiter
-                reply.Closed += (s, a) => { reply = null; sync.Release(); };
+                //reply.Closed += (s, a) => { reply = null; sync.Release(); };
 
                 return reply;
             }
             catch
             {
-                sync.Release();
                 throw;
             }
         }

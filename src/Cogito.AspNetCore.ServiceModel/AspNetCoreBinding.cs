@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Xml;
@@ -20,10 +21,9 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        /// <param name="incoming"></param>
-        protected AspNetCoreBinding()
+        protected AspNetCoreBinding(bool secure)
         {
-            this.transport = new AspNetCoreTransportBindingElement();
+            this.transport = new AspNetCoreTransportBindingElement(secure);
             this.textEncoding = new TextMessageEncodingBindingElement();
             this.textEncoding.MessageVersion = MessageVersion.Soap11;
             this.mtomEncoding = new MtomMessageEncodingBindingElement();
@@ -38,9 +38,14 @@ namespace Cogito.AspNetCore.ServiceModel
         }
 
         /// <summary>
+        /// Returns whether or not this binding is associated with HTTPS requests.
+        /// </summary>
+        public bool Secure => transport.Secure;
+
+        /// <summary>
         /// Gets the scheme of the binding.
         /// </summary>
-        public override string Scheme => "aspnetcore";
+        public override string Scheme => transport.Scheme;
 
         /// <summary>
         /// Gets the text encoding element.
@@ -57,6 +62,39 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         [DefaultValue(WSMessageEncoding.Text)]
         public WSMessageEncoding MessageEncoding { get; set; } = WSMessageEncoding.Text;
+
+        /// <summary>
+        /// Gets or sets the SOAP and WS-Addressing versions that are used to format the text message.
+        /// </summary>
+        public new MessageVersion MessageVersion
+        {
+            get
+            {
+                switch (MessageEncoding)
+                {
+                    case WSMessageEncoding.Text:
+                        return textEncoding.MessageVersion;
+                    case WSMessageEncoding.Mtom:
+                        return mtomEncoding.MessageVersion;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+            set
+            {
+                switch (MessageEncoding)
+                {
+                    case WSMessageEncoding.Text:
+                        textEncoding.MessageVersion = value;
+                        break;
+                    case WSMessageEncoding.Mtom:
+                        mtomEncoding.MessageVersion = value;
+                        break;
+                    default:
+                        throw new InvalidOperationException();
+                }
+            }
+        }
 
         /// <summary>
         /// Gets the maximum buffer size.

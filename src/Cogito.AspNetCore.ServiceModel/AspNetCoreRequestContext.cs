@@ -40,7 +40,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public override void Close(TimeSpan timeout)
         {
-
+            
         }
 
         public override void Close()

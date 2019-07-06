@@ -1,4 +1,5 @@
-﻿using System.ServiceModel.Description;
+﻿using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,15 +18,11 @@ namespace Cogito.AspNetCore.ServiceModel.Service
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseDeveloperExceptionPage();
+            //app.UseDeveloperExceptionPage();
 
             app.UseServiceHost<MathService>("", configure =>
             {
                 configure.AddServiceEndpoint<IMathService>("");
-                configure.AddServiceEndpoint<IMathService>("/2");
-
-                var d = configure.ServiceHost.Description.Behaviors.Find<ServiceDebugBehavior>();
-                d.IncludeExceptionDetailInFaults = true;
             });
         }
 

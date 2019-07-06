@@ -17,10 +17,10 @@ namespace Cogito.AspNetCore.ServiceModel
         /// Initializes a new instance.
         /// </summary>
         /// <param name="channelManager"></param>
-        protected AsyncReplyChannelBase(ChannelManagerBase channelManager) : 
+        protected AsyncReplyChannelBase(ChannelManagerBase channelManager) :
             base(channelManager)
         {
-            
+
         }
 
         /// <summary>
@@ -45,12 +45,12 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public RequestContext ReceiveRequest()
         {
-            return ReceiveRequestAsync().Result;
+            return ReceiveRequestAsync().ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public RequestContext ReceiveRequest(TimeSpan timeout)
         {
-            return ReceiveRequestAsync(timeout).Result;
+            return ReceiveRequestAsync(timeout).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected abstract Task<RequestContext> ReceiveRequestAsync();
@@ -59,7 +59,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public bool TryReceiveRequest(TimeSpan timeout, out RequestContext context)
         {
-            throw new NotImplementedException();
+            return (context = ReceiveRequest(timeout)) != null;
         }
 
         public IAsyncResult BeginTryReceiveRequest(TimeSpan timeout, AsyncCallback callback, object state)
@@ -79,12 +79,12 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public bool EndWaitForRequest(IAsyncResult result)
         {
-            return ((Task<bool>)result).Result;
+            return ((Task<bool>)result).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public bool WaitForRequest(TimeSpan timeout)
         {
-            return WaitForRequestAsync(timeout).Result;
+            return WaitForRequestAsync(timeout).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected abstract Task<bool> WaitForRequestAsync(TimeSpan timeout);

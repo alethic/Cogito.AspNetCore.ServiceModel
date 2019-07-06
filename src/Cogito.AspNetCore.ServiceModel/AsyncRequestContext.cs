@@ -31,12 +31,12 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public override sealed void Reply(Message message)
         {
-            ReplyAsync(message).Wait();
+            ReplyAsync(message).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         public override sealed void Reply(Message message, TimeSpan timeout)
         {
-            ReplyAsync(message, timeout).Wait();
+            ReplyAsync(message, timeout).ConfigureAwait(false).GetAwaiter().GetResult();
         }
 
         protected abstract Task ReplyAsync(Message message);

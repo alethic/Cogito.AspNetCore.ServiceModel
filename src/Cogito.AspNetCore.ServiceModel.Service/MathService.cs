@@ -1,4 +1,5 @@
 ﻿using System.ServiceModel;
+using System.Threading.Tasks;
 
 namespace Cogito.AspNetCore.ServiceModel.Service
 {
@@ -8,9 +9,8 @@ namespace Cogito.AspNetCore.ServiceModel.Service
         IMathService
     {
 
-        public int Add(int x, int y)
+        public async Task<int> Add(int x, int y)
         {
-            var p = OperationContext.Current.GetAspNetCoreContext();
             return x + y;
         }
 
