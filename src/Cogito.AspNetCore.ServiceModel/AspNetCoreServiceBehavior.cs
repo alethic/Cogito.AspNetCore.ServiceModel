@@ -32,7 +32,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
         {
-
+            
         }
 
         public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)

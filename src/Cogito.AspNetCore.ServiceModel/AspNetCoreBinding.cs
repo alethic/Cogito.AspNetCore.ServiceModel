@@ -10,7 +10,7 @@ namespace Cogito.AspNetCore.ServiceModel
     /// <summary>
     /// Abstract ASP.Net Core Binding implementation.
     /// </summary>
-    public abstract class AspNetCoreBinding : Binding
+    public abstract class AspNetCoreBinding : Binding, IBindingRuntimePreferences
     {
 
         readonly TextMessageEncodingBindingElement textEncoding;
@@ -194,6 +194,11 @@ namespace Cogito.AspNetCore.ServiceModel
 
             return c;
         }
+
+        /// <summary>
+        /// Operation in async mode.
+        /// </summary>
+        bool IBindingRuntimePreferences.ReceiveSynchronously => false;
 
     }
 
