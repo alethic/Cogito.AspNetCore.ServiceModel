@@ -17,12 +17,7 @@ namespace Cogito.AspNetCore.ServiceModel.Service
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseServiceHost(new AspNetCoreServiceHostOptions()
-            {
-                ServiceType = typeof(MathService),
-                MessageVersion = MessageVersion.Soap11,
-                Configure = c => c.AddServiceEndpoint<IMathService>("")
-            });
+            app.UseServiceHost<MathService>("", MessageVersion.Soap11);
         }
 
     }

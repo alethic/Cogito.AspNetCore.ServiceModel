@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -35,6 +36,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="bindings"></param>
         /// <param name="router"></param>
         /// <param name="messageVersion"></param>
+        /// <param name="logger"></param>
         /// <param name="applicationLifetime"></param>
         AspNetCoreServiceHostMiddleware(
             RequestDelegate next,
@@ -42,6 +44,7 @@ namespace Cogito.AspNetCore.ServiceModel
             AspNetCoreRequestRouter router,
             MessageVersion messageVersion,
             IApplicationLifetime applicationLifetime,
+            ILogger<AspNetCoreServiceHostMiddleware> logger,
             IServiceProvider serviceProvider)
         {
             this.next = next;
@@ -60,7 +63,17 @@ namespace Cogito.AspNetCore.ServiceModel
             httpsBaseUri = new Uri($"https://{routeId.ToString("N")}/");
 
             // register for cleanup when application is stopped
-            applicationLifetime.ApplicationStopping.Register(() => host.Close());
+            applicationLifetime.ApplicationStopping.Register(() =>
+            {
+                try
+                {
+                    host.Close();
+                }
+                catch (Exception e)
+                {
+                    logger.LogError(e, "Exception closing ServiceHost.");
+                }
+            });
         }
 
         /// <summary>
@@ -71,6 +84,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="bindings"></param>
         /// <param name="router"></param>
         /// <param name="applicationLifetime"></param>
+        /// <param name="logger"></param>
         /// <param name="serviceProvider"></param>
         protected AspNetCoreServiceHostMiddleware(
             RequestDelegate next,
@@ -79,10 +93,11 @@ namespace Cogito.AspNetCore.ServiceModel
             AspNetCoreRequestRouter router,
             MessageVersion messageVersion,
             IApplicationLifetime applicationLifetime,
+            ILogger<AspNetCoreServiceHostMiddleware> logger,
             IServiceProvider serviceProvider) :
-            this(next, bindings, router, messageVersion, applicationLifetime, serviceProvider)
+            this(next, bindings, router, messageVersion, applicationLifetime, logger, serviceProvider)
         {
-            this.host = new ServiceHost(serviceType, new[] { httpBaseUri, httpsBaseUri });
+            this.host = new AspNetCoreServiceHost(serviceType, AddDefaultServiceEndpoint, httpBaseUri, httpsBaseUri);
             host.Description.Behaviors.Add(new AspNetCoreServiceBehavior(router));
             host.Description.Behaviors.Add(new UseRequestHeadersForMetadataAddressBehavior());
 
@@ -131,8 +146,9 @@ namespace Cogito.AspNetCore.ServiceModel
             AspNetCoreRequestRouter router,
             AspNetCoreServiceHostOptions options,
             IApplicationLifetime applicationLifetime,
+            ILogger<AspNetCoreServiceHostMiddleware> logger,
             IServiceProvider serviceProvider) :
-            this(next, options.ServiceType, CreateBindingFactory(serviceProvider, options.BindingFactoryType), router, options.MessageVersion, applicationLifetime, serviceProvider)
+            this(next, options.ServiceType, CreateBindingFactory(serviceProvider, options.BindingFactoryType), router, options.MessageVersion, applicationLifetime, logger, serviceProvider)
         {
             options.Configure?.Invoke(new AspNetCoreServiceHostConfigurator(this));
         }
@@ -167,14 +183,29 @@ namespace Cogito.AspNetCore.ServiceModel
         internal Binding HttpsBinding => httpsBinding;
 
         /// <summary>
+        /// Adds the default service endpoint for the given contract type.
+        /// </summary>
+        /// <param name="contractType"></param>
+        /// <param name="relativePath"></param>
+        /// <returns></returns>
+        ServiceEndpoint[] AddDefaultServiceEndpoint(Type contractType)
+        {
+            return new[]
+            {
+                host.AddServiceEndpoint(contractType, httpBinding, "", httpBaseUri),
+                host.AddServiceEndpoint(contractType, httpsBinding, "", httpsBaseUri),
+            };
+        }
+
+        /// <summary>
         /// Registers a new service endpoint.
         /// </summary>
         /// <typeparam name="TContract"></typeparam>
         /// <param name="relativePath"></param>
         public void AddServiceEndpoint<TContract>(string relativePath)
         {
-            host.AddServiceEndpoint(typeof(TContract), httpBinding, relativePath);
-            host.AddServiceEndpoint(typeof(TContract), httpsBinding, relativePath);
+            host.AddServiceEndpoint(typeof(TContract), httpBinding, relativePath, httpBaseUri);
+            host.AddServiceEndpoint(typeof(TContract), httpsBinding, relativePath, httpsBaseUri);
         }
 
         /// <summary>
@@ -184,8 +215,8 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="relativePath"></param>
         public void AddServiceEndpoint(Type contractType, string relativePath)
         {
-            host.AddServiceEndpoint(contractType, httpBinding, relativePath);
-            host.AddServiceEndpoint(contractType, httpsBinding, relativePath);
+            host.AddServiceEndpoint(contractType, httpBinding, relativePath, httpBaseUri);
+            host.AddServiceEndpoint(contractType, httpsBinding, relativePath, httpsBaseUri);
         }
 
         /// <summary>
@@ -195,8 +226,8 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="relativePath"></param>
         public void AddServiceEndpoint(string implementedContract, string relativePath)
         {
-            host.AddServiceEndpoint(implementedContract, httpBinding, relativePath);
-            host.AddServiceEndpoint(implementedContract, httpsBinding, relativePath);
+            host.AddServiceEndpoint(implementedContract, httpBinding, relativePath, httpBaseUri);
+            host.AddServiceEndpoint(implementedContract, httpsBinding, relativePath, httpsBaseUri);
         }
 
         /// <summary>

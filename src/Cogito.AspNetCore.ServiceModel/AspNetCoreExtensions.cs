@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ServiceModel.Channels;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -15,12 +16,12 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddServiceModel(
-            this IServiceCollection services)
+        public static IServiceCollection AddServiceModel(this IServiceCollection services)
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
+            services.AddLogging();
             services.AddTransient<AspNetCoreRequestRouter>();
             services.AddTransient<AspNetCoreBindingFactory>();
             return services;
@@ -103,6 +104,35 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="app"></param>
         /// <param name="path"></param>
         /// <param name="serviceType"></param>
+        /// <param name="messageVersion"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost(
+            this IApplicationBuilder app,
+            PathString path,
+            Type serviceType,
+            MessageVersion messageVersion = null,
+            Action<AspNetCoreServiceHostConfigurator> configure = null)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+            if (serviceType == null)
+                throw new ArgumentNullException(nameof(serviceType));
+
+            return app.UseServiceHost(path, new AspNetCoreServiceHostOptions()
+            {
+                MessageVersion = messageVersion ?? MessageVersion.Default,
+                ServiceType = serviceType,
+                Configure = configure,
+            });
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="path"></param>
+        /// <param name="serviceType"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
         public static IApplicationBuilder UseServiceHost(
@@ -116,6 +146,28 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new ArgumentNullException(nameof(serviceType));
 
             return app.UseServiceHost(PathString.Empty, serviceType, configure);
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path.
+        /// </summary>
+        /// <param name="app"></param>
+        /// <param name="serviceType"></param>
+        /// <param name="messageVersion"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost(
+            this IApplicationBuilder app,
+            Type serviceType,
+            MessageVersion messageVersion = null,
+            Action<AspNetCoreServiceHostConfigurator> configure = null)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+            if (serviceType == null)
+                throw new ArgumentNullException(nameof(serviceType));
+
+            return app.UseServiceHost(PathString.Empty, serviceType, messageVersion, configure);
         }
 
         /// <summary>
@@ -142,6 +194,27 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <typeparam name="TService"></typeparam>
         /// <param name="app"></param>
+        /// <param name="path"></param>
+        /// <param name="messageVersion"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost<TService>(
+            this IApplicationBuilder app,
+            PathString path,
+            MessageVersion messageVersion = null,
+            Action<AspNetCoreServiceHostConfigurator> configure = null)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+
+            return app.UseServiceHost(path, typeof(TService), messageVersion, configure);
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path and hosts the specified service.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <param name="app"></param>
         /// <param name="configure"></param>
         /// <returns></returns>
         public static IApplicationBuilder UseServiceHost<TService>(
@@ -149,6 +222,21 @@ namespace Cogito.AspNetCore.ServiceModel
             Action<AspNetCoreServiceHostConfigurator> configure = null)
         {
             return app.UseServiceHost<TService>(PathString.Empty, configure);
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path and hosts the specified service.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <param name="app"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost<TService>(
+            this IApplicationBuilder app,
+            MessageVersion messageVersion = null,
+            Action<AspNetCoreServiceHostConfigurator> configure = null)
+        {
+            return app.UseServiceHost<TService>(PathString.Empty, messageVersion, configure);
         }
 
         /// <summary>
@@ -175,6 +263,26 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <typeparam name="TService"></typeparam>
         /// <typeparam name="TContract"></typeparam>
         /// <param name="app"></param>
+        /// <param name="path"></param>
+        /// <param name="messageVersion"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost<TService, TContract>(
+            this IApplicationBuilder app,
+            PathString path,
+            MessageVersion messageVersion = null)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+
+            return app.UseServiceHost<TService>(path, messageVersion, configure => configure.AddServiceEndpoint<TContract>());
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path and hosts the specified service and contract type.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="app"></param>
         /// <returns></returns>
         public static IApplicationBuilder UseServiceHost<TService, TContract>(
             this IApplicationBuilder app)
@@ -183,6 +291,24 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new ArgumentNullException(nameof(app));
 
             return app.UseServiceHost<TService, TContract>(PathString.Empty);
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path and hosts the specified service and contract type.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="app"></param>
+        /// <param name="messageVersion"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost<TService, TContract>(
+            this IApplicationBuilder app,
+            MessageVersion messageVersion = null)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+
+            return app.UseServiceHost<TService, TContract>(PathString.Empty, messageVersion);
         }
 
     }
