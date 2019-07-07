@@ -1,0 +1,11 @@
+{
+    "profiles": {
+        "Cogito.AspNetCore.ServiceModel.Service": {
+            "commandName": "Project",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "applicationUrl": "http://localhost:12561/"
+        }
+    }
+}
