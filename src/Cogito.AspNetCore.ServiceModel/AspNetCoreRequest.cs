@@ -9,17 +9,15 @@ namespace Cogito.AspNetCore.ServiceModel
     /// <summary>
     /// Encapsulates an ASP.Net request.
     /// </summary>
-    public class AspNetCoreRequest :
-        TaskCompletionSource<bool>
+    class AspNetCoreRequest : TaskCompletionSource<bool>
     {
 
         readonly HttpContext context;
 
         /// <summary>
-        /// Initializes a new instance.
+        /// Initializes a new instance
         /// </summary>
         /// <param name="context"></param>
-        /// <param name="next"></param>
         public AspNetCoreRequest(HttpContext context)
         {
             this.context = context ?? throw new ArgumentNullException(nameof(context));

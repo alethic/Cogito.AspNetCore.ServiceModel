@@ -1,8 +1,7 @@
 ﻿using System.ServiceModel.Channels;
-using System.ServiceModel.Description;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
 
@@ -18,11 +17,11 @@ namespace Cogito.AspNetCore.ServiceModel.Service
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            //app.UseDeveloperExceptionPage();
-
-            app.UseServiceHost<MathService>("", configure =>
+            app.UseServiceHost(new AspNetCoreServiceHostOptions()
             {
-                configure.AddServiceEndpoint<IMathService>("");
+                ServiceType = typeof(MathService),
+                MessageVersion = MessageVersion.Soap11,
+                Configure = c => c.AddServiceEndpoint<IMathService>("")
             });
         }
 

@@ -1,4 +1,5 @@
-﻿using System.ServiceModel.Channels;
+﻿using System;
+using System.ServiceModel.Channels;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -10,16 +11,20 @@ namespace Cogito.AspNetCore.ServiceModel
     {
 
         /// <summary>
-        /// Creates a ASP.NET Core Binding based on the specified security mode.
+        /// Creates a ASP.NET Core Binding based on the specified security mode and optional method filter.
         /// </summary>
+        /// <param name="serviceProvider"></param>
         /// <param name="messageVersion"></param>
         /// <param name="secure"></param>
+        /// <param name="method"></param>
         /// <returns></returns>
-        public virtual Binding CreateBinding(MessageVersion messageVersion, bool secure)
+        public virtual Binding CreateBinding(IServiceProvider serviceProvider, MessageVersion messageVersion, bool secure, string method = null)
         {
-            return new AspNetCoreBasicBinding(secure)
+            return new AspNetCoreBasicBinding()
             {
-                MessageVersion = messageVersion
+                MessageVersion = messageVersion,
+                Secure = secure,
+                Method = method,
             };
         }
 

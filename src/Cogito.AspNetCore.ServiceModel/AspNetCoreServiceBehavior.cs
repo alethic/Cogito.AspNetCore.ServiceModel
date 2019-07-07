@@ -10,7 +10,7 @@ namespace Cogito.AspNetCore.ServiceModel
     /// <summary>
     /// Applies contextual configuration to host a WCF service in ASP.Net core.
     /// </summary>
-    public class AspNetCoreServiceBehavior :
+    class AspNetCoreServiceBehavior :
         IServiceBehavior
     {
 

@@ -15,6 +15,8 @@ namespace Cogito.AspNetCore.ServiceModel
         readonly BufferManager bufferManager;
         readonly MessageEncoderFactory encoderFactory;
         readonly Uri uri;
+        readonly bool secure;
+        readonly string method;
 
         // signal on close
         CancellationTokenSource open;
@@ -32,9 +34,12 @@ namespace Cogito.AspNetCore.ServiceModel
             base(context.Binding)
         {
             this.router = router ?? throw new ArgumentNullException(nameof(router));
-            this.bufferManager = BufferManager.CreateBufferManager(transportElement.MaxBufferPoolSize, (int)transportElement.MaxReceivedMessageSize);
-            this.encoderFactory = context.BindingParameters.Remove<MessageEncodingBindingElement>().CreateMessageEncoderFactory();
-            this.uri = new Uri(context.ListenUriBaseAddress, context.ListenUriRelativeAddress);
+
+            bufferManager = BufferManager.CreateBufferManager(transportElement.MaxBufferPoolSize, (int)transportElement.MaxReceivedMessageSize);
+            encoderFactory = context.BindingParameters.Remove<MessageEncodingBindingElement>().CreateMessageEncoderFactory();
+            uri = new Uri(context.ListenUriBaseAddress, context.ListenUriRelativeAddress);
+            secure = transportElement.Secure;
+            method = transportElement.Method;
         }
 
         /// <summary>
@@ -74,11 +79,8 @@ namespace Cogito.AspNetCore.ServiceModel
             if (timeout.TotalMilliseconds > int.MaxValue)
                 timeout = TimeSpan.FromMilliseconds(int.MaxValue);
 
-            var queue = await router.GetQueueAsync(uri).ConfigureAwait(false);
-            if (queue == null)
-                throw new InvalidOperationException($"Unable to obtain queue for {uri}.");
-
-            return await queue.WaitForRequestAsync(timeout);
+            using (var lease = router.Acquire(secure, method))
+                return await lease.Queue.WaitForRequestAsync(timeout);
         }
 
         protected override async Task<IReplyChannel> OnAcceptChannelAsync(TimeSpan timeout)
@@ -91,28 +93,22 @@ namespace Cogito.AspNetCore.ServiceModel
             if (timeout.TotalMilliseconds > int.MaxValue)
                 timeout = TimeSpan.FromMilliseconds(int.MaxValue);
 
-            var queue = await router.GetQueueAsync(uri).ConfigureAwait(false);
-            if (queue == null)
-                throw new InvalidOperationException($"Unable to obtain queue for {uri}.");
-
-            // wait until a new request is available
-            var request = await queue.ReceiveAsync(timeout).ConfigureAwait(false);
-            if (request == null)
-                return null;
-
-            try
+            // acquire a lease on the queue
+            using (var lease = router.Acquire(secure, method))
             {
+                // wait until a new request is available
+                var request = await lease.Queue.ReceiveAsync(timeout).ConfigureAwait(false);
+                if (request == null)
+                    return null;
+
                 // generate new channel instance
                 return new AspNetCoreReplyChannel(
                     request,
+                    router.Acquire(secure, method),
                     encoderFactory,
                     bufferManager,
                     new EndpointAddress(Uri),
                     this);
-            }
-            catch
-            {
-                throw;
             }
         }
 

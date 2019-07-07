@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ServiceModel.Channels;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -8,6 +9,16 @@ namespace Cogito.AspNetCore.ServiceModel
     /// </summary>
     public class AspNetCoreServiceHostOptions
     {
+
+        /// <summary>
+        /// Factory to create bindings.
+        /// </summary>
+        public Type BindingFactoryType { get; set; } = typeof(AspNetCoreBindingFactory);
+
+        /// <summary>
+        /// Version of messaging to use.
+        /// </summary>
+        public MessageVersion MessageVersion { get; set; } = MessageVersion.Default;
 
         /// <summary>
         /// Service type to host.

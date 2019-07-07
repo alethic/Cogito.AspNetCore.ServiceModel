@@ -41,7 +41,7 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             
         }
-
+        
         public override void Close()
         {
 

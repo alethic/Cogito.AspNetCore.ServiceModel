@@ -10,15 +10,12 @@ namespace Cogito.AspNetCore.ServiceModel
         TransportBindingElement
     {
 
-        readonly bool secure;
-
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        /// <param name="secure"></param>
-        public AspNetCoreTransportBindingElement(bool secure)
+        public AspNetCoreTransportBindingElement()
         {
-            this.secure = secure;
+
         }
 
         /// <summary>
@@ -27,6 +24,8 @@ namespace Cogito.AspNetCore.ServiceModel
         public AspNetCoreTransportBindingElement(AspNetCoreTransportBindingElement other) :
             base(other)
         {
+            Secure = other.Secure;
+            Method = other.Method;
             MaxBufferSize = other.MaxBufferSize;
             MaxFaultSize = other.MaxFaultSize;
         }
@@ -34,12 +33,17 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Returns whether or not this transport element is associated with HTTPs.
         /// </summary>
-        public bool Secure => secure;
+        public bool Secure { get; set; }
+
+        /// <summary>
+        /// Returns the HTTP method to receive messages for.
+        /// </summary>
+        public string Method { get; set; }
 
         /// <summary>
         /// Gets the scheme supported by this binding element.
         /// </summary>
-        public override string Scheme => secure ? "https" : "http";
+        public override string Scheme => Secure ? "https" : "http";
 
         /// <summary>
         /// Maximum size of a buffer.

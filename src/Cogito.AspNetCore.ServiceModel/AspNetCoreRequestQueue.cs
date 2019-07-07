@@ -12,19 +12,30 @@ namespace Cogito.AspNetCore.ServiceModel
     /// <summary>
     /// Dispatches requests to the ASP.Net Core channel listener.
     /// </summary>
-    public class AspNetCoreRequestQueue :
-        IDisposable
+    class AspNetCoreRequestQueue : IDisposable
     {
 
-        readonly BufferBlock<AspNetCoreRequest> buffer;
+        readonly object sync = new object();
+        BufferBlock<AspNetCoreRequest> buffer;
 
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        /// <param name="buffer"></param>
         public AspNetCoreRequestQueue()
         {
             this.buffer = new BufferBlock<AspNetCoreRequest>();
+        }
+
+        /// <summary>
+        /// Opens the queue so more requests can be processed.
+        /// </summary>
+        public void Open()
+        {
+            lock (sync)
+            {
+                Close();
+                buffer = new BufferBlock<AspNetCoreRequest>();
+            }
         }
 
         /// <summary>
@@ -33,7 +44,33 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         public void Close()
         {
-            buffer.Complete();
+            lock (sync)
+            {
+                try
+                {
+                    if (buffer.Completion.IsCompleted == false)
+                        buffer.Complete();
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                try
+                {
+                    // cancel any items still in the buffer
+                    if (buffer.TryReceiveAll(out var items))
+                        foreach (var i in items)
+                            i.TrySetCanceled();
+                }
+                catch
+                {
+                    // ignore
+                }
+
+                // remove access to buffer
+                buffer = null;
+            }
         }
 
         /// <summary>
@@ -87,6 +124,12 @@ namespace Cogito.AspNetCore.ServiceModel
         }
 
         void IDisposable.Dispose()
+        {
+            Close();
+            GC.SuppressFinalize(this);
+        }
+
+        ~AspNetCoreRequestQueue()
         {
             Close();
         }

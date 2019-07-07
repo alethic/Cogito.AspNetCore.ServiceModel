@@ -1,5 +1,4 @@
 ﻿using System;
-using Cogito.ServiceModel;
 using System.Linq;
 using System.Net;
 using System.Net.Mime;
@@ -18,8 +17,7 @@ using Microsoft.AspNetCore.Http.Internal;
 namespace Cogito.AspNetCore.ServiceModel
 {
 
-    class AspNetCoreReplyChannel :
-        AsyncReplyChannelBase
+    class AspNetCoreReplyChannel : AsyncReplyChannelBase
     {
 
         /// <summary>
@@ -73,6 +71,7 @@ namespace Cogito.AspNetCore.ServiceModel
         const int MaxSizeOfHeaders = 4 * 1024;
 
         AspNetCoreRequest request;
+        AspNetCoreRequestQueueLease lease;
 
         readonly MessageEncoder encoder;
         readonly BufferManager bufferManager;
@@ -82,12 +81,14 @@ namespace Cogito.AspNetCore.ServiceModel
         /// Initializes a new instance.
         /// </summary>
         /// <param name="request"></param>
+        /// <param name="lease"></param>
         /// <param name="encoderFactory"></param>
         /// <param name="bufferManager"></param>
         /// <param name="localAddress"></param>
         /// <param name="parent"></param>
         public AspNetCoreReplyChannel(
             AspNetCoreRequest request,
+            AspNetCoreRequestQueueLease lease,
             MessageEncoderFactory encoderFactory,
             BufferManager bufferManager,
             EndpointAddress localAddress,
@@ -95,9 +96,10 @@ namespace Cogito.AspNetCore.ServiceModel
             base(parent)
         {
             this.request = request ?? throw new ArgumentNullException(nameof(request));
-            this.encoder = encoderFactory.CreateSessionEncoder();
+            this.lease = lease ?? throw new ArgumentNullException(nameof(lease));
             this.bufferManager = bufferManager ?? throw new ArgumentNullException(nameof(bufferManager));
             this.localAddress = localAddress ?? throw new ArgumentNullException(nameof(localAddress));
+            this.encoder = encoderFactory.CreateSessionEncoder();
         }
 
         /// <summary>
@@ -172,44 +174,51 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="timeout"></param>
         /// <returns></returns>
-        protected override async Task<(RequestContext Result, bool Timeout)> TryReceiveRequestAsync(TimeSpan timeout)
+        protected override async Task<(RequestContext Result, bool Success)> TryReceiveRequestAsync(TimeSpan timeout)
         {
             ThrowIfDisposedOrNotOpen();
 
             if (timeout.TotalMilliseconds > int.MaxValue)
                 timeout = TimeSpan.FromMilliseconds(int.MaxValue);
 
-            try
+            lock (ThisLock)
             {
-                // request was already handled, let the channel timeout
-                if (request == null)
-                    return (null, true);
+                try
+                {
+                    // request was already handled, let the channel timeout
+                    if (request == null)
+                        return (null, true);
 
-                // incoming request was canceled
-                if (request.Context.RequestAborted.IsCancellationRequested)
-                    Abort();
+                    // incoming request was canceled
+                    if (request.Context.RequestAborted.IsCancellationRequested)
+                        Abort();
 
-                ThrowIfDisposedOrNotOpen();
+                    ThrowIfDisposedOrNotOpen();
 
-                // read message and generate context
-                var context = new AspNetCoreRequestContext(
-                    request,
-                    await ReadMessageAsync(request.Context.Request).ConfigureAwait(false),
-                    this);
+                    // read message and generate context
+                    var context = new AspNetCoreRequestContext(
+                        request,
+                        ReadMessage(request.Context.Request),
+                        this);
 
-                // release request, this channel is done
-                request = null;
-                return (context, true);
-            }
-            catch (CommunicationException e)
-            {
-                request?.TrySetException(e);
-                throw;
-            }
-            catch (Exception e)
-            {
-                request?.TrySetException(e);
-                throw new CommunicationException(e.Message, e);
+                    // release request, this channel is done
+                    return (context, true);
+                }
+                catch (CommunicationException e)
+                {
+                    request?.TrySetException(e);
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    request?.TrySetException(e);
+                    throw new CommunicationException(e.Message, e);
+                }
+                finally
+                {
+                    // finished with request, forget about it
+                    request = null;
+                }
             }
         }
 
@@ -249,6 +258,14 @@ namespace Cogito.AspNetCore.ServiceModel
                 request.TrySetException(e);
                 throw new CommunicationException(e.Message, e);
             }
+            finally
+            {
+                if (lease != null)
+                {
+                    lease.Dispose();
+                    lease = null;
+                }
+            }
         }
 
         /// <summary>
@@ -256,12 +273,12 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        async Task<Message> ReadMessageAsync(HttpRequest request)
+        Message ReadMessage(HttpRequest request)
         {
             if (request == null)
                 throw new ArgumentException(nameof(request));
 
-            var message = await ReadMessageBodyAsync(request).ConfigureAwait(false);
+            var message = ReadMessageBody(request);
             if (message != null)
                 ReadMessageAddressing(request, message);
 
@@ -273,7 +290,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        async Task<Message> ReadMessageBodyAsync(HttpRequest request)
+        Message ReadMessageBody(HttpRequest request)
         {
             if (request == null)
                 throw new ArgumentException(nameof(request));
@@ -300,7 +317,7 @@ namespace Cogito.AspNetCore.ServiceModel
                     return Message.CreateMessage(MessageVersion.None, null);
 
                 // buffer data
-                var raw = await request.Body.ReadAllBytesAsync();
+                var raw = request.Body.ReadAllBytes();
                 var dat = bufferManager.TakeBuffer(raw.Length);
 
                 try
@@ -392,9 +409,6 @@ namespace Cogito.AspNetCore.ServiceModel
             {
                 action = WebUtility.UrlDecode(action);
 
-                if (action.Length >= 2 && action[0] == '"' && action[action.Length - 1] == '"')
-                    action = action.Substring(1, action.Length - 2);
-
                 if (message.Version.Addressing == AddressingVersion.None)
                     message.Headers.Action = action;
 
@@ -453,10 +467,10 @@ namespace Cogito.AspNetCore.ServiceModel
                 if (contentType.MediaType == "multipart/related" &&
                     contentType.Parameters.ContainsKey("start-info"))
                     // action in start-info as defined in RFC2387
-                    return new ContentType(contentType.Parameters["start-info"]).Parameters["action"];
+                    return new ContentType(contentType.Parameters["start-info"]).Parameters["action"]?.Trim('\'');
 
                 // default location for action
-                return contentType.Parameters["action"];
+                return contentType.Parameters["action"]?.Trim('\'');
             }
 
             return null;

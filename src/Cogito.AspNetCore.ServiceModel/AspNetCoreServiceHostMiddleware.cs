@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -15,15 +14,15 @@ namespace Cogito.AspNetCore.ServiceModel
     /// <summary>
     /// Dispatches requests to the WCF infrastructure.
     /// </summary>
-    public class AspNetCoreServiceHostMiddleware
+    class AspNetCoreServiceHostMiddleware
     {
 
         readonly RequestDelegate next;
         readonly AspNetCoreBindingFactory bindings;
-        readonly IApplicationLifetime applicationLifetime;
+        readonly AspNetCoreRequestRouter router;
+
         readonly Binding httpBinding;
         readonly Binding httpsBinding;
-        readonly AspNetCoreRequestRouter router;
         readonly ServiceHost host;
         readonly Guid routeId;
         readonly Uri httpBaseUri;
@@ -35,21 +34,23 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="next"></param>
         /// <param name="bindings"></param>
         /// <param name="router"></param>
+        /// <param name="messageVersion"></param>
         /// <param name="applicationLifetime"></param>
         AspNetCoreServiceHostMiddleware(
             RequestDelegate next,
             AspNetCoreBindingFactory bindings,
             AspNetCoreRequestRouter router,
-            IApplicationLifetime applicationLifetime)
+            MessageVersion messageVersion,
+            IApplicationLifetime applicationLifetime,
+            IServiceProvider serviceProvider)
         {
             this.next = next;
             this.bindings = bindings ?? throw new ArgumentNullException(nameof(bindings));
-            this.applicationLifetime = applicationLifetime ?? throw new ArgumentNullException(nameof(applicationLifetime));
             this.router = router ?? throw new ArgumentNullException(nameof(router));
 
             // bindings for registered services
-            httpBinding = bindings.CreateBinding(MessageVersion.Default, false);
-            httpsBinding = bindings.CreateBinding(MessageVersion.Default, true);
+            httpBinding = bindings.CreateBinding(serviceProvider, messageVersion, false);
+            httpsBinding = bindings.CreateBinding(serviceProvider, messageVersion, true);
 
             // identifies this registered middleware route
             routeId = Guid.NewGuid();
@@ -70,13 +71,16 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="bindings"></param>
         /// <param name="router"></param>
         /// <param name="applicationLifetime"></param>
+        /// <param name="serviceProvider"></param>
         protected AspNetCoreServiceHostMiddleware(
             RequestDelegate next,
             Type serviceType,
             AspNetCoreBindingFactory bindings,
             AspNetCoreRequestRouter router,
-            IApplicationLifetime applicationLifetime) :
-            this(next, bindings, router, applicationLifetime)
+            MessageVersion messageVersion,
+            IApplicationLifetime applicationLifetime,
+            IServiceProvider serviceProvider) :
+            this(next, bindings, router, messageVersion, applicationLifetime, serviceProvider)
         {
             this.host = new ServiceHost(serviceType, new[] { httpBaseUri, httpsBaseUri });
             host.Description.Behaviors.Add(new AspNetCoreServiceBehavior(router));
@@ -93,15 +97,15 @@ namespace Cogito.AspNetCore.ServiceModel
             if (sdb == null)
                 host.Description.Behaviors.Add(sdb = new ServiceDebugBehavior());
 
-            var httpGetBinding = bindings.CreateBinding(MessageVersion.None, false);
-            var httpsGetBinding = bindings.CreateBinding(MessageVersion.None, true);
+            var httpGetBinding = bindings.CreateBinding(serviceProvider, MessageVersion.None, false, HttpMethods.Get);
+            var httpsGetBinding = bindings.CreateBinding(serviceProvider, MessageVersion.None, true, HttpMethods.Get);
 
             sdb.HttpHelpPageEnabled = true;
             sdb.HttpHelpPageBinding = httpGetBinding;
-            sdb.HttpHelpPageUrl = new Uri("/help", UriKind.Relative);
+            sdb.HttpHelpPageUrl = new Uri("", UriKind.Relative);
             sdb.HttpsHelpPageEnabled = true;
             sdb.HttpsHelpPageBinding = httpsGetBinding;
-            sdb.HttpsHelpPageUrl = new Uri("/help", UriKind.Relative);
+            sdb.HttpsHelpPageUrl = new Uri("", UriKind.Relative);
             sdb.IncludeExceptionDetailInFaults = false;
 
             var smb = host.Description.Behaviors.Find<ServiceMetadataBehavior>();
@@ -118,20 +122,29 @@ namespace Cogito.AspNetCore.ServiceModel
         /// Initializes a new instance.
         /// </summary>
         /// <param name="next"></param>
-        /// <param name="bindings"></param>
         /// <param name="router"></param>
         /// <param name="options"></param>
         /// <param name="applicationLifetime"></param>
+        /// <param name="serviceProvider"></param>
         public AspNetCoreServiceHostMiddleware(
             RequestDelegate next,
-            AspNetCoreBindingFactory bindings,
             AspNetCoreRequestRouter router,
-            IOptions<AspNetCoreServiceHostOptions> options,
-            IApplicationLifetime applicationLifetime) :
-            this(next, options.Value.ServiceType, bindings, router, applicationLifetime)
+            AspNetCoreServiceHostOptions options,
+            IApplicationLifetime applicationLifetime,
+            IServiceProvider serviceProvider) :
+            this(next, options.ServiceType, CreateBindingFactory(serviceProvider, options.BindingFactoryType), router, options.MessageVersion, applicationLifetime, serviceProvider)
         {
-            options.Value.Configure?.Invoke(new AspNetCoreServiceHostConfigurator(this));
+            options.Configure?.Invoke(new AspNetCoreServiceHostConfigurator(this));
         }
+
+        /// <summary>
+        /// Obtains an instance of the binding factory based on the configured type.
+        /// </summary>
+        /// <param name="serviceProvider"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        static AspNetCoreBindingFactory CreateBindingFactory(IServiceProvider serviceProvider, Type type) =>
+            (AspNetCoreBindingFactory)serviceProvider.GetRequiredService(type);
 
         /// <summary>
         /// Gets a reference to the service host.

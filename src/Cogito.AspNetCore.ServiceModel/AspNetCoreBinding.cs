@@ -10,8 +10,7 @@ namespace Cogito.AspNetCore.ServiceModel
     /// <summary>
     /// Abstract ASP.Net Core Binding implementation.
     /// </summary>
-    public abstract class AspNetCoreBinding :
-        Binding
+    public abstract class AspNetCoreBinding : Binding
     {
 
         readonly TextMessageEncodingBindingElement textEncoding;
@@ -21,9 +20,9 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Initializes a new instance.
         /// </summary>
-        protected AspNetCoreBinding(bool secure)
+        protected AspNetCoreBinding()
         {
-            this.transport = new AspNetCoreTransportBindingElement(secure);
+            this.transport = new AspNetCoreTransportBindingElement();
             this.textEncoding = new TextMessageEncodingBindingElement();
             this.textEncoding.MessageVersion = MessageVersion.Soap11;
             this.mtomEncoding = new MtomMessageEncodingBindingElement();
@@ -40,7 +39,20 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Returns whether or not this binding is associated with HTTPS requests.
         /// </summary>
-        public bool Secure => transport.Secure;
+        public bool Secure
+        {
+            get => transport.Secure;
+            set => transport.Secure = value;
+        }
+
+        /// <summary>
+        /// Returns the method to be considered by this binding.
+        /// </summary>
+        public string Method
+        {
+            get => transport.Method;
+            set => transport.Method = value;
+        }
 
         /// <summary>
         /// Gets the scheme of the binding.

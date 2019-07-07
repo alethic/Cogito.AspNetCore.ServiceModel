@@ -3,7 +3,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
@@ -47,16 +46,15 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new ArgumentException("Must specify ServiceType in options.", nameof(options));
 
             if (path.HasValue)
-                return app.Map(path, x => x.UseMiddleware<AspNetCoreServiceHostMiddleware>(Options.Create(options)));
+                return app.Map(path, x => x.UseMiddleware<AspNetCoreServiceHostMiddleware>(options));
             else
-                return app.UseMiddleware<AspNetCoreServiceHostMiddleware>(Options.Create(options));
+                return app.UseMiddleware<AspNetCoreServiceHostMiddleware>(options);
         }
 
         /// <summary>
         /// Wires up the AspNetCore WCF framework to the given path.
         /// </summary>
         /// <param name="app"></param>
-        /// <param name="path"></param>
         /// <param name="options"></param>
         /// <returns></returns>
         public static IApplicationBuilder UseServiceHost(
