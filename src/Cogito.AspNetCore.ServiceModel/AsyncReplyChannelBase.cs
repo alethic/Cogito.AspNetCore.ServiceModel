@@ -64,13 +64,17 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public IAsyncResult BeginTryReceiveRequest(TimeSpan timeout, AsyncCallback callback, object state)
         {
-            return ReceiveRequestAsync(timeout).ToAsyncBegin(callback, state);
+            return TryReceiveRequestAsync(timeout).ToAsyncBegin(callback, state);
         }
 
         public bool EndTryReceiveRequest(IAsyncResult result, out RequestContext context)
         {
-            return (context = ((Task<RequestContext>)result).ToAsyncEnd()) != null;
+            bool r;
+            (context, r) = ((Task<(RequestContext, bool)>)result).ToAsyncEnd();
+            return r;
         }
+
+        protected abstract Task<(RequestContext Result, bool Timeout)> TryReceiveRequestAsync(TimeSpan timeout);
 
         public IAsyncResult BeginWaitForRequest(TimeSpan timeout, AsyncCallback callback, object state)
         {

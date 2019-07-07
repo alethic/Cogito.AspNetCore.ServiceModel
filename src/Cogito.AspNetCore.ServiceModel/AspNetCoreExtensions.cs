@@ -22,7 +22,7 @@ namespace Cogito.AspNetCore.ServiceModel
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
-            services.AddSingleton<AspNetCoreRequestRouter>();
+            services.AddTransient<AspNetCoreRequestRouter>();
             services.AddTransient<AspNetCoreBindingFactory>();
             return services;
         }

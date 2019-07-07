@@ -71,7 +71,7 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new AspNetCoreServiceModelException($"Unable to route request '{context.Request.Path}'. No registered listener.");
 
             // route to queue and wait for request to be handled
-            await queue.SendAsync(context);
+            await queue.SendAsync(context).ConfigureAwait(false);
         }
 
         /// <summary>

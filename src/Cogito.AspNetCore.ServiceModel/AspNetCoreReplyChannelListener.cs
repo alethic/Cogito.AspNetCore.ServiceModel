@@ -71,7 +71,14 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override async Task<bool> OnWaitForChannelAsync(TimeSpan timeout)
         {
-            return await (await router.GetQueueAsync(uri)).WaitForRequestAsync(timeout);
+            if (timeout.TotalMilliseconds > int.MaxValue)
+                timeout = TimeSpan.FromMilliseconds(int.MaxValue);
+
+            var queue = await router.GetQueueAsync(uri).ConfigureAwait(false);
+            if (queue == null)
+                throw new InvalidOperationException($"Unable to obtain queue for {uri}.");
+
+            return await queue.WaitForRequestAsync(timeout);
         }
 
         protected override async Task<IReplyChannel> OnAcceptChannelAsync(TimeSpan timeout)
@@ -81,28 +88,27 @@ namespace Cogito.AspNetCore.ServiceModel
             if (open.IsCancellationRequested)
                 return null;
 
-            // maximum wait time
             if (timeout.TotalMilliseconds > int.MaxValue)
                 timeout = TimeSpan.FromMilliseconds(int.MaxValue);
 
-            // wait until a channel is available
-            if (await OnWaitForChannelAsync(timeout) == false)
+            var queue = await router.GetQueueAsync(uri).ConfigureAwait(false);
+            if (queue == null)
+                throw new InvalidOperationException($"Unable to obtain queue for {uri}.");
+
+            // wait until a new request is available
+            var request = await queue.ReceiveAsync(timeout).ConfigureAwait(false);
+            if (request == null)
                 return null;
 
             try
             {
                 // generate new channel instance
-                var reply = new AspNetCoreReplyChannel(
-                    await router.GetQueueAsync(uri),
+                return new AspNetCoreReplyChannel(
+                    request,
                     encoderFactory,
                     bufferManager,
                     new EndpointAddress(Uri),
                     this);
-
-                // when reply channel is closed, clear it out and signal next waiter
-                //reply.Closed += (s, a) => { reply = null; sync.Release(); };
-
-                return reply;
             }
             catch
             {

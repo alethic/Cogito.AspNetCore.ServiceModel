@@ -46,7 +46,7 @@ namespace Cogito.AspNetCore.ServiceModel
             var request = new AspNetCoreRequest(context);
 
             // ensure data makes it into buffer
-            while (!await buffer.SendAsync(request))
+            while (!await buffer.SendAsync(request).ConfigureAwait(false))
                 await Task.Yield();
 
             // wait for completion of request
@@ -60,8 +60,8 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         internal async Task<bool> WaitForRequestAsync(TimeSpan timeout)
         {
-            return await buffer.OutputAvailableAsync(new CancellationTokenSource(timeout).Token);
-        }   
+            return await buffer.OutputAvailableAsync(new CancellationTokenSource(timeout).Token).ConfigureAwait(false);
+        }
 
         /// <summary>
         /// Receives the next request or waits for a timeout.
@@ -77,7 +77,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
                 var sw = new Stopwatch();
                 sw.Start();
-                var ms = await buffer.ReceiveAsync(timeout);
+                var ms = await buffer.ReceiveAsync(timeout).ConfigureAwait(false);
                 return ms;
             }
             catch (OperationCanceledException e)

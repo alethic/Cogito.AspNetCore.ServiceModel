@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,9 +49,6 @@ namespace Cogito.AspNetCore.ServiceModel
 
         protected override async Task ReplyAsync(Message message, TimeSpan timeout)
         {
-            if (request.Context.RequestAborted.IsCancellationRequested)
-                throw new CommunicationObjectAbortedException();
-
             await reply.ReplyAsync(message, request, timeout);
         }
 

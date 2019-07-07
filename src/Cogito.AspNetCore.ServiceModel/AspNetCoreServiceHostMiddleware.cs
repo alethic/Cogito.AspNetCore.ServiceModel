@@ -93,12 +93,15 @@ namespace Cogito.AspNetCore.ServiceModel
             if (sdb == null)
                 host.Description.Behaviors.Add(sdb = new ServiceDebugBehavior());
 
+            var httpGetBinding = bindings.CreateBinding(MessageVersion.None, false);
+            var httpsGetBinding = bindings.CreateBinding(MessageVersion.None, true);
+
             sdb.HttpHelpPageEnabled = true;
-            sdb.HttpHelpPageBinding = bindings.CreateBinding(MessageVersion.None, false);
-            sdb.HttpHelpPageUrl = new Uri("/", UriKind.Relative);
+            sdb.HttpHelpPageBinding = httpGetBinding;
+            sdb.HttpHelpPageUrl = new Uri("/help", UriKind.Relative);
             sdb.HttpsHelpPageEnabled = true;
-            sdb.HttpsHelpPageBinding = bindings.CreateBinding(MessageVersion.None, true);
-            sdb.HttpsHelpPageUrl = new Uri("/", UriKind.Relative);
+            sdb.HttpsHelpPageBinding = httpsGetBinding;
+            sdb.HttpsHelpPageUrl = new Uri("/help", UriKind.Relative);
             sdb.IncludeExceptionDetailInFaults = false;
 
             var smb = host.Description.Behaviors.Find<ServiceMetadataBehavior>();
@@ -106,9 +109,9 @@ namespace Cogito.AspNetCore.ServiceModel
                 host.Description.Behaviors.Add(smb = new ServiceMetadataBehavior());
 
             smb.HttpGetEnabled = true;
-            smb.HttpGetBinding = bindings.CreateBinding(MessageVersion.None, false);
+            smb.HttpGetBinding = httpGetBinding;
             smb.HttpsGetEnabled = true;
-            smb.HttpsGetBinding = bindings.CreateBinding(MessageVersion.None, true);
+            smb.HttpsGetBinding = httpsGetBinding;
         }
 
         /// <summary>
