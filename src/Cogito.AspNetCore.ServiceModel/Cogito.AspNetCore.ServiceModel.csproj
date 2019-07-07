@@ -23,6 +23,7 @@
   <ItemGroup>
     <Reference Include="System.ServiceModel" />
     <Reference Include="System.ServiceModel.Activation" />
+    <Reference Include="System.Web.Services" />
   </ItemGroup>
 
 </Project>

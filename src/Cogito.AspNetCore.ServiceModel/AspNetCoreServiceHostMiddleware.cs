@@ -99,7 +99,7 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             this.host = new AspNetCoreServiceHost(serviceType, AddDefaultServiceEndpoint, httpBaseUri, httpsBaseUri);
             host.Description.Behaviors.Add(new AspNetCoreServiceBehavior(router));
-            host.Description.Behaviors.Add(new UseRequestHeadersForMetadataAddressBehavior());
+            host.Description.Behaviors.Add(new AspNetCoreWsdlServiceBehavior());
 
             var szs = host.Description.Behaviors.Find<ServiceBehaviorAttribute>();
             if (szs == null)
