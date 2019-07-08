@@ -27,7 +27,9 @@ write back to the originating ASP.Net core Response.
 
 Internally a non-standard ListenURI is set up for each invocation of `UseServiceHost`. These each get a "Router ID",
 which is a GUID that idenfies the target `ServiceHost` instance. This can probably go away now that I can get access to
-the server addresses of Kestrel and such.
+the server addresses of Kestrel and such. The main problem here is the branching paths in ASP.Net are not known until a
+request traverses them. So, I can't determine the path of the service until a request comes in. WCF makes this all very
+hard.
 
 This lets us use the existing `ServiceHost` class. And thus eventually piggyback on existing `ServiceHost` extensions:
 like Autofac integration. And it keeps the dispatch/contract discovery stuff in WCF.
