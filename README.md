@@ -34,3 +34,5 @@ hard.
 This lets us use the existing `ServiceHost` class. And thus eventually piggyback on existing `ServiceHost` extensions:
 like Autofac integration. And it keeps the dispatch/contract discovery stuff in WCF.
 
+The `ServiceHost` is automatically configured with service metadata endpoints at ?wsdl, and a help page, like most
+standard WCF services. A channel dispatcher message inspector is used to rewrite router URLs in the response.
