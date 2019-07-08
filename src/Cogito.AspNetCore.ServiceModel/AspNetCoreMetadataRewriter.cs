@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.ServiceModel.Description;
 using System.Web.Services.Description;
 using System.Xml.Schema;
 
@@ -46,17 +45,17 @@ namespace Cogito.AspNetCore.ServiceModel
         /// Rewrites an endpoint description.
         /// </summary>
         /// <param name="exporter"></param>
-        public void RewriteEndpoint(WsdlExporter exporter)
+        public void RewriteEndpoint(System.ServiceModel.Description.WsdlExporter exporter)
         {
             // index wsdl references
-            foreach (var (service, index) in exporter.GeneratedWsdlDocuments.Cast<System.Web.Services.Description.ServiceDescription>().Select((i, j) => (i, j)))
+            foreach (var (service, index) in exporter.GeneratedWsdlDocuments.Cast<ServiceDescription>().Select((i, j) => (i, j)))
                 indexes[service] = index;
 
             // index schema references
             foreach (var (schema, index) in exporter.GeneratedXmlSchemas.Schemas().Cast<XmlSchema>().Select((i, j) => (i, j)))
                 indexes[schema] = index;
 
-            foreach (System.Web.Services.Description.ServiceDescription document in exporter.GeneratedWsdlDocuments)
+            foreach (ServiceDescription document in exporter.GeneratedWsdlDocuments)
                 RewriteServiceDescription(document);
         }
 
@@ -67,7 +66,11 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         int IndexOf(object o) => indexes.GetOrDefault(o);
 
-        public void RewriteServiceDescription(System.Web.Services.Description.ServiceDescription document)
+        /// <summary>
+        /// Rewrites the specified <see cref="System.ServiceModel.Description.ServiceDescription"/>.
+        /// </summary>
+        /// <param name="document"></param>
+        public void RewriteServiceDescription(ServiceDescription document)
         {
             foreach (Import import in document.Imports)
                 RewriteImport(import);
@@ -150,16 +153,13 @@ namespace Cogito.AspNetCore.ServiceModel
 
         string RewriteAddress(string address)
         {
-            if (properties != null)
+            var addr = new UriBuilder(address);
+            if (addr.Uri.Host == properties.RoutingUri.Host)
             {
-                var addr = new UriBuilder(address);
-                if (addr.Uri.Host == properties.RoutingUri.Host)
-                {
-                    addr.Host = properties.Context.Request.Host.Host;
-                    addr.Port = properties.Context.Request.Host.Port ?? addr.Port;
-                    addr.Path = new PathString(addr.Path) + properties.Context.Request.PathBase + properties.Context.Request.Path;
-                    return addr.Uri.ToString();
-                }
+                addr.Host = properties.Context.Request.Host.Host;
+                addr.Port = properties.Context.Request.Host.Port ?? addr.Port;
+                addr.Path = new PathString(addr.Path) + properties.Context.Request.PathBase + properties.Context.Request.Path;
+                return addr.Uri.ToString();
             }
 
             return address;
