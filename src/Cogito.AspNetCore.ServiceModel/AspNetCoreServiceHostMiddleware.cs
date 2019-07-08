@@ -97,16 +97,9 @@ namespace Cogito.AspNetCore.ServiceModel
             IServiceProvider serviceProvider) :
             this(next, bindings, router, messageVersion, applicationLifetime, logger, serviceProvider)
         {
-            this.host = new AspNetCoreServiceHost(serviceType, AddDefaultServiceEndpoint, httpBaseUri, httpsBaseUri);
-            host.Description.Behaviors.Add(new AspNetCoreServiceBehavior(router));
-            host.Description.Behaviors.Add(new AspNetCoreWsdlServiceBehavior());
-
-            var szs = host.Description.Behaviors.Find<ServiceBehaviorAttribute>();
-            if (szs == null)
-                host.Description.Behaviors.Add(szs = new ServiceBehaviorAttribute());
-
-            szs.IncludeExceptionDetailInFaults = true;
-            szs.UseSynchronizationContext = false;
+            host = new AspNetCoreServiceHost(serviceType, AddDefaultServiceEndpoint, httpBaseUri, httpsBaseUri);
+            host.Description.Behaviors.Add(new AspNetCoreRequestRouterBehavior(router));
+            host.Description.Behaviors.Add(new AspNetCoreServiceMetadataBehavior());
 
             var sdb = host.Description.Behaviors.Find<ServiceDebugBehavior>();
             if (sdb == null)

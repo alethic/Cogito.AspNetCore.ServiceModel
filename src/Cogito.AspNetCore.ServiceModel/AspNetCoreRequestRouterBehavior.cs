@@ -10,8 +10,7 @@ namespace Cogito.AspNetCore.ServiceModel
     /// <summary>
     /// Applies contextual configuration to host a WCF service in ASP.Net core.
     /// </summary>
-    class AspNetCoreServiceBehavior :
-        IServiceBehavior
+    class AspNetCoreRequestRouterBehavior : IServiceBehavior
     {
 
         readonly AspNetCoreRequestRouter router;
@@ -20,7 +19,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// Initializes a new instance.
         /// </summary>
         /// <param name="router"></param>
-        public AspNetCoreServiceBehavior(AspNetCoreRequestRouter router)
+        public AspNetCoreRequestRouterBehavior(AspNetCoreRequestRouter router)
         {
             this.router = router ?? throw new ArgumentNullException(nameof(router));
         }
@@ -32,7 +31,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
         {
-            
+
         }
 
         public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)

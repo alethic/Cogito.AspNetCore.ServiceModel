@@ -30,24 +30,7 @@ namespace Cogito.AspNetCore.ServiceModel.Collections
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
-            TValue v;
-            return self.TryGetValue(key, out v) ? v : default(TValue);
-        }
-
-        /// <summary>
-        /// Gets the value for the specified key, or the default value of the type.
-        /// </summary>
-        /// <param name="self"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static object GetOrDefault(this IDictionary self, object key)
-        {
-            if (self == null)
-                throw new ArgumentNullException(nameof(self));
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
-
-            return self.Contains(key) ? self[key] : null;
+            return self.TryGetValue(key, out var v) ? v : default;
         }
 
         /// <summary>
