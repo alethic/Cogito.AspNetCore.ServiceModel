@@ -45,22 +45,6 @@ namespace Cogito.AspNetCore.ServiceModel.Collections
                 self.Remove(i);
         }
 
-        /// <summary>
-        /// Removes all of the items from the first collection which do not appear in the second.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="self"></param>
-        /// <param name="keep"></param>
-        public static void RemoveExceptRange<T>(this ICollection<T> self, IEnumerable<T> keep)
-        {
-            if (self == null)
-                throw new ArgumentNullException(nameof(self));
-            if (keep == null)
-                throw new ArgumentNullException(nameof(keep));
-
-            self.RemoveRange(self.Except(keep).ToArray());
-        }
-
     }
 
 }

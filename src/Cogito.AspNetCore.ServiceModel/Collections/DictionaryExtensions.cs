@@ -55,8 +55,7 @@ namespace Cogito.AspNetCore.ServiceModel.Collections
             if (self is ConcurrentDictionary<TKey, TValue>)
                 return ((ConcurrentDictionary<TKey, TValue>)self).GetOrAdd(key, create);
 
-            TValue v;
-            return self.TryGetValue(key, out v) ? v : self[key] = create(key);
+            return self.TryGetValue(key, out var v) ? v : self[key] = create(key);
         }
 
         /// <summary>
@@ -77,91 +76,7 @@ namespace Cogito.AspNetCore.ServiceModel.Collections
             if (create == null)
                 throw new ArgumentNullException(nameof(create));
 
-            TValue v;
-            return self.TryGetValue(key, out v) ? v : self[key] = await create(key);
-        }
-
-        /// <summary>
-        /// Returns a <see cref="IDictionary"/> implementation which merges the first dictionary with the second.
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="source"></param>
-        /// <param name="second"></param>
-        /// <returns></returns>
-        public static IDictionary<TKey, TValue> Merge<TKey, TValue>(this IDictionary<TKey, TValue> source, IDictionary<TKey, TValue> second)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-            if (second == null)
-                throw new ArgumentNullException(nameof(second));
-
-            var d = new Dictionary<TKey, TValue>(source);
-
-            // merge keys from second into new copy
-            foreach (var i in second)
-                if (i.Key != null)
-                    d[i.Key] = i.Value;
-
-            return d;
-        }
-
-        /// <summary>
-        /// Converts the <see cref="IEnumerable{TKey,TValue}"/> to a <see cref="IDictionary{TKey,TValue}"/>.
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <typeparam name="TElement"></typeparam>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static IDictionary<TKey, TElement> ToDictionary<TKey, TElement>(this IEnumerable<KeyValuePair<TKey, TElement>> source)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            return source.ToDictionary(i => i.Key, i => i.Value);
-        }
-
-        /// <summary>
-        /// Returns an empty <see cref="IDictionary{TKey, TValue}"/> if <paramref name="source"/> is null.
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static IDictionary<TKey, TValue> EmptyIfNull<TKey, TValue>(this IDictionary<TKey, TValue> source)
-        {
-            return source ?? new Dictionary<TKey, TValue>();
-        }
-
-        /// <summary>
-        /// Returns an empty <see cref="IDictionary{TKey, TValue}"/> if <paramref name="source"/> is null.
-        /// </summary>
-        /// <typeparam name="TKey"></typeparam>
-        /// <typeparam name="TValue"></typeparam>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static Dictionary<TKey, TValue> EmptyIfNull<TKey, TValue>(this Dictionary<TKey, TValue> source)
-        {
-            return source ?? new Dictionary<TKey, TValue>();
-        }
-
-        /// <summary>
-        /// Transforms the given dictionary of strings to a <see cref="NameValueCollection"/>.
-        /// </summary>
-        /// <param name="source"></param>
-        /// <returns></returns>
-        public static NameValueCollection ToNameValueCollection(this IDictionary<string, string> source)
-        {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
-
-            var c = new NameValueCollection();
-
-            // add items to collection
-            foreach (var i in source)
-                c.Add(i.Key, i.Value);
-
-            return c;
+            return self.TryGetValue(key, out var v) ? v : self[key] = await create(key);
         }
 
     }
