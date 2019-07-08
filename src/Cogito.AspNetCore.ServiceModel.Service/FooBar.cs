@@ -3,7 +3,7 @@
 namespace Cogito.AspNetCore.ServiceModel.Service.More
 {
 
-    [ServiceContract]
+    [ServiceContract(Namespace = "http://tempuri.org/", Name = "Other")]
     public interface IOtherContract
     {
 

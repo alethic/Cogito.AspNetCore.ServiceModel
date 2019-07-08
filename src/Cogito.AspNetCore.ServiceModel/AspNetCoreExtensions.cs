@@ -283,6 +283,28 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <typeparam name="TService"></typeparam>
         /// <typeparam name="TContract"></typeparam>
         /// <param name="app"></param>
+        /// <param name="path"></param>
+        /// <param name="messageVersion"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static IApplicationBuilder UseServiceHost<TService, TContract>(
+            this IApplicationBuilder app,
+            PathString path,
+            MessageVersion messageVersion = null,
+            Action<AspNetCoreServiceHostConfigurator> configure = null)
+        {
+            if (app == null)
+                throw new ArgumentNullException(nameof(app));
+
+            return app.UseServiceHost<TService>(path, messageVersion, c => configure(c.AddServiceEndpoint<TContract>()));
+        }
+
+        /// <summary>
+        /// Wires up the AspNetCore WCF framework to the given path and hosts the specified service and contract type.
+        /// </summary>
+        /// <typeparam name="TService"></typeparam>
+        /// <typeparam name="TContract"></typeparam>
+        /// <param name="app"></param>
         /// <returns></returns>
         public static IApplicationBuilder UseServiceHost<TService, TContract>(
             this IApplicationBuilder app)
