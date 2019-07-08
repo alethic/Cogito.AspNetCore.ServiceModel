@@ -17,7 +17,7 @@ namespace Cogito.AspNetCore.ServiceModel.Service
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseServiceHost<MathService, IMathService>("/Service.asmx", MessageVersion.Soap11, c => { });
+            app.UseServiceHost<MathService>("/Service.asmx", MessageVersion.Soap11, c => { });
         }
 
     }

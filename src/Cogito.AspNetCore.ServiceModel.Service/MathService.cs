@@ -1,24 +1,25 @@
-﻿using System.Threading.Tasks;
-
-using Cogito.AspNetCore.ServiceModel.Service.More;
+﻿using LexisNexis.EFM;
 
 namespace Cogito.AspNetCore.ServiceModel.Service
 {
 
 
-    public class MathService : IMathService
+    public class MathService : ILoxnpWebService
     {
-
-        public async Task<int> Add(int x, int y, FooBar o)
+        public void Enqueue(string xml)
         {
-            return x + y;
+            throw new System.NotImplementedException();
         }
 
-        public void Do()
+        public object InitiateTransaction(object data)
         {
-
+            throw new System.NotImplementedException();
         }
 
+        public object ReceiveMTOM(object data, object documents)
+        {
+            throw new System.NotImplementedException();
+        }
     }
 
 }

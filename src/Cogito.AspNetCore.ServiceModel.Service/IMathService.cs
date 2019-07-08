@@ -1,17 +1,30 @@
 ﻿using System.ServiceModel;
-using System.Threading.Tasks;
 
-using Cogito.AspNetCore.ServiceModel.Service.More;
-
-namespace Cogito.AspNetCore.ServiceModel.Service
+namespace LexisNexis.EFM
 {
 
-    [ServiceContract(Namespace = "http://tempuri.org/", Name = "Math")]
-    public interface IMathService : IOtherContract
+    /// <summary>
+    /// Interface for all Efm web services
+    /// </summary>
+    [ServiceContract(Namespace = "http://www.lexisnexis.com/efm/EfmAdaptorWebServices")]
+    public interface ILoxnpWebService : IEfmWebService
     {
 
-        [OperationContract(Action = "Add")]
-        Task<int> Add(int x, int y, FooBar o);
+        /// <summary>
+        /// Takes a LOXNP mesage and sends it to the adaptor.
+        /// </summary>
+        /// <param name="xml"></param>
+        [OperationContract]
+        void Enqueue(string xml);
+
+        /// <summary>
+        /// Creates a new web service transaction.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="documents"></param>
+        /// <returns></returns>
+        [OperationContract]
+        object ReceiveMTOM(object data, object documents);
 
     }
 

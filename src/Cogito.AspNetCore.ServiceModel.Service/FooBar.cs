@@ -1,21 +1,22 @@
 ﻿using System.ServiceModel;
 
-namespace Cogito.AspNetCore.ServiceModel.Service.More
+namespace LexisNexis.EFM
 {
 
-    [ServiceContract(Namespace = "http://tempuri.org/", Name = "Other")]
-    public interface IOtherContract
+    /// <summary>
+    /// Interface for all Efm web services
+    /// </summary>
+    [ServiceContract(Namespace = "http://www.lexisnexis.com/efm/EfmAdaptorWebServices")]
+    public interface IEfmWebService
     {
 
-        [OperationContract]
-        void Do();
-
-    }
-
-    public class FooBar
-    {
-
-
+        /// <summary>
+        /// Creates a new web service transaction.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        [OperationContract(IsInitiating =false)]
+        object InitiateTransaction(object data);
 
     }
 

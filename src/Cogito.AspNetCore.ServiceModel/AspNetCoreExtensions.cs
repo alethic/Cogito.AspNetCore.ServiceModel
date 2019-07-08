@@ -254,7 +254,7 @@ namespace Cogito.AspNetCore.ServiceModel
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
 
-            return app.UseServiceHost<TService>(path, configure => configure.AddServiceEndpoint<TContract>());
+            return app.UseServiceHost<TService>(path, c => c.AddServiceEndpoint<TContract>());
         }
 
         /// <summary>
@@ -274,7 +274,7 @@ namespace Cogito.AspNetCore.ServiceModel
             if (app == null)
                 throw new ArgumentNullException(nameof(app));
 
-            return app.UseServiceHost<TService>(path, messageVersion, configure => configure.AddServiceEndpoint<TContract>());
+            return app.UseServiceHost<TService>(path, messageVersion, c => c.AddServiceEndpoint<TContract>());
         }
 
         /// <summary>
