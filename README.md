@@ -9,21 +9,26 @@ public void ConfigureServices(IServiceCollection services)
 {
     services.AddServiceModel();
 }
-        
+
 public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 {
-    app.UseServiceHost<MathService>("/math", configure =>
-    {
-        configure.AddServiceEndpoint<IMathService>("");
-        configure.AddServiceEndpoint<IMathService>("/2");
-    });
+    app.UseServiceHost<MathService>("/math");
 }
 ```
 
 I've done a few things internally that are sort of weird.
 
-A custom baseUri is established with a custom scheme: `aspnetcore`. Service endpoints register and listen against these addresses: `aspnetcore:/GUID/path`. Paths are rewritten into these internal paths as they enter the middleware, and dispatched to a router. The router routes to a set of queues. The queues exist because `ChannelListeners` start up and register queues to listen to.
+Each invocation of `UseServiceHost` starts up a `ServiceHost` instance. This service host is configured by default with
+bindings that establish a `AspNetCoreTransport`. The transport generates `ReplyChannel`s which sets up an inbound
+delivery queue based on the binding properties. As ASP.Net Core requests arrive, they are dispatched into the router
+where the hunt for a queue that they should be put
+into. The `ReplyChannelListener` dequeues these requests and enters them into the WCF pipeline. Reply messages likewise
+write back to the originating ASP.Net core Response.
 
-This lets us use the existing `ServiceHost` class. And thus eventually piggyback on existing `ServiceHost` extensions: like Autofac integration. And it keeps the dispatch/contract discovery stuff in WCF. The only unfortunate part about this is `ServiceHost` is kind of heavy. Seems to spawn a lot of channel listeners, and invoke `OnBeginAccept` a lot. So, we're using semaphores to lease those out.
+Internally a non-standard ListenURI is set up for each invocation of `UseServiceHost`. These each get a "Router ID",
+which is a GUID that idenfies the target `ServiceHost` instance. This can probably go away now that I can get access to
+the server addresses of Kestrel and such.
 
-Also, I'm using completely custom bindings. `BasicHttpBinding` is not used, of course. `AspNetCoreBasicBinding` is instead doing the same setup. I want a `AspnetCoreWSBinding`!
+This lets us use the existing `ServiceHost` class. And thus eventually piggyback on existing `ServiceHost` extensions:
+like Autofac integration. And it keeps the dispatch/contract discovery stuff in WCF.
+
