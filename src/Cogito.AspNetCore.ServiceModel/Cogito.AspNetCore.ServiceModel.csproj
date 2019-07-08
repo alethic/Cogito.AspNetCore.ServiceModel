@@ -8,6 +8,7 @@
     <Description>ASP.NET Core WCF middleware. Includes middleware for routing SOAP requests to WCF ServiceHost instances. Allows you to host your SOAP service on ASP.Net Core.</Description>
     <PackageProjectUrl>https://github.com/wasabii/Cogito.AspNetCore.ServiceModel</PackageProjectUrl>
     <PackageIconUrl>https://cloverluxussc.blob.core.windows.net/public/cogito-nuget-icon.png</PackageIconUrl>
+    <LangVersion>7.2</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
