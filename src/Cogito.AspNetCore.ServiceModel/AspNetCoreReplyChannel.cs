@@ -459,7 +459,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
             if (message.Version.Envelope == EnvelopeVersion.Soap11)
                 if (request.Headers.TryGetValue("SOAPAction", out var value))
-                    return value.FirstOrDefault()?.Trim('\'').Trim('"');
+                    return TrimQuotedString(value.FirstOrDefault());
 
             if (message.Version.Envelope == EnvelopeVersion.Soap12 && !string.IsNullOrEmpty(request.ContentType))
             {
@@ -467,13 +467,30 @@ namespace Cogito.AspNetCore.ServiceModel
                 if (contentType.MediaType == "multipart/related" &&
                     contentType.Parameters.ContainsKey("start-info"))
                     // action in start-info as defined in RFC2387
-                    return new ContentType(contentType.Parameters["start-info"]).Parameters["action"]?.Trim('\'').Trim('"');
+                    return TrimQuotedString(new ContentType(contentType.Parameters["start-info"]).Parameters["action"]);
 
                 // default location for action
-                return contentType.Parameters["action"]?.Trim('\'').Trim('"');
+                return TrimQuotedString(contentType.Parameters["action"]);
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Trims and surrounding quotes.
+        /// </summary>
+        /// <param name="value"></param>
+        string TrimQuotedString(string value)
+        {
+            if (value == null)
+                return value;
+
+            if (value.StartsWith("\"") && value.EndsWith("\""))
+                value = value.Trim('"');
+            else if (value.StartsWith("\'") && value.EndsWith("\'"))
+                value = value.Trim('\'');
+
+            return value;
         }
 
         /// <summary>
