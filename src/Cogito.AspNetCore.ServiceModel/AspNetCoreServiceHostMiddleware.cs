@@ -115,7 +115,6 @@ namespace Cogito.AspNetCore.ServiceModel
             sdb.HttpsHelpPageEnabled = true;
             sdb.HttpsHelpPageBinding = httpsGetBinding;
             sdb.HttpsHelpPageUrl = new Uri("", UriKind.Relative);
-            sdb.IncludeExceptionDetailInFaults = false;
 
             var smb = host.Description.Behaviors.Find<ServiceMetadataBehavior>();
             if (smb == null)
@@ -180,15 +179,11 @@ namespace Cogito.AspNetCore.ServiceModel
         /// Adds the default service endpoint for the given contract type.
         /// </summary>
         /// <param name="contractType"></param>
-        /// <param name="relativePath"></param>
         /// <returns></returns>
-        ServiceEndpoint[] AddDefaultServiceEndpoint(Type contractType)
+        IEnumerable<ServiceEndpoint> AddDefaultServiceEndpoint(Type contractType)
         {
-            return new[]
-            {
-                host.AddServiceEndpoint(contractType, httpBinding, "", httpBaseUri),
-                host.AddServiceEndpoint(contractType, httpsBinding, "", httpsBaseUri),
-            };
+            yield return host.AddServiceEndpoint(contractType, httpBinding, "", httpBaseUri);
+            yield return host.AddServiceEndpoint(contractType, httpsBinding, "", httpsBaseUri);
         }
 
         /// <summary>

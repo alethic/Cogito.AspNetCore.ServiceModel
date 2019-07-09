@@ -181,7 +181,8 @@ namespace Cogito.AspNetCore.ServiceModel
 
         public void ExportEndpoint(WsdlExporter exporter, WsdlEndpointConversionContext context)
         {
-            new AspNetCoreMetadataRewriter(AspNetCoreMessageProperty.GetValue(OperationContext.Current.IncomingMessageProperties)).RewriteEndpoint(exporter);
+            var ctx = OperationContext.Current;
+            new AspNetCoreMetadataRewriter(ctx != null ? AspNetCoreMessageProperty.GetValue(ctx.IncomingMessageProperties) : null).RewriteEndpoint(exporter);
         }
 
     }

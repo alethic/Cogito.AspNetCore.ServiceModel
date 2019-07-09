@@ -25,7 +25,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public AspNetCoreMetadataRewriter(AspNetCoreMessageProperty properties)
         {
-            this.properties = properties ?? throw new ArgumentNullException(nameof(properties));
+            this.properties = properties;
         }
 
         /// <summary>
@@ -34,11 +34,16 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         UriBuilder CreateBaseUriBuilder()
         {
-            var addr = new UriBuilder(properties.RoutingUri);
-            addr.Host = properties.Context.Request.Host.Host;
-            addr.Port = properties.Context.Request.Host.Port ?? addr.Port;
-            addr.Path = new PathString(addr.Path) + properties.Context.Request.PathBase + properties.Context.Request.Path;
-            return addr;
+            if (properties != null)
+            {
+                var addr = new UriBuilder(properties.RoutingUri);
+                addr.Host = properties.Context.Request.Host.Host;
+                addr.Port = properties.Context.Request.Host.Port ?? addr.Port;
+                addr.Path = new PathString(addr.Path) + properties.Context.Request.PathBase + properties.Context.Request.Path;
+                return addr;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -85,6 +90,8 @@ namespace Cogito.AspNetCore.ServiceModel
         void RewriteImport(Import import)
         {
             var addr = CreateBaseUriBuilder();
+            if (addr == null)
+                return;
 
             // import location has never been filled in, attempt to fill it in
             if (import.Location == null && import.ServiceDescription != null)
@@ -106,6 +113,8 @@ namespace Cogito.AspNetCore.ServiceModel
         public void RewriteSchema(XmlSchema schema)
         {
             var addr = CreateBaseUriBuilder();
+            if (addr == null)
+                return;
 
             foreach (var import in schema.Includes.OfType<XmlSchemaImport>())
             {
@@ -153,13 +162,16 @@ namespace Cogito.AspNetCore.ServiceModel
 
         string RewriteAddress(string address)
         {
-            var addr = new UriBuilder(address);
-            if (addr.Uri.Host == properties.RoutingUri.Host)
+            if (properties != null)
             {
-                addr.Host = properties.Context.Request.Host.Host;
-                addr.Port = properties.Context.Request.Host.Port ?? addr.Port;
-                addr.Path = new PathString(addr.Path) + properties.Context.Request.PathBase + properties.Context.Request.Path;
-                return addr.Uri.ToString();
+                var addr = new UriBuilder(address);
+                if (addr.Uri.Host == properties.RoutingUri.Host)
+                {
+                    addr.Host = properties.Context.Request.Host.Host;
+                    addr.Port = properties.Context.Request.Host.Port ?? addr.Port;
+                    addr.Path = new PathString(addr.Path) + properties.Context.Request.PathBase + properties.Context.Request.Path;
+                    return addr.Uri.ToString();
+                }
             }
 
             return address;

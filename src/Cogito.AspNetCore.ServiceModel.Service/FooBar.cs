@@ -15,7 +15,7 @@ namespace LexisNexis.EFM
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
-        [OperationContract(IsInitiating =false)]
+        [OperationContract]
         object InitiateTransaction(object data);
 
     }
