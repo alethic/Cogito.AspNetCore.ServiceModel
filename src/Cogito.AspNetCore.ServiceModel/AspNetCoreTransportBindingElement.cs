@@ -1,13 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
+using System.Web.Services.Description;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
 
-    public class AspNetCoreTransportBindingElement :
-        TransportBindingElement
+    public class AspNetCoreTransportBindingElement : TransportBindingElement, IWsdlExportExtension
     {
 
         /// <summary>
@@ -88,6 +90,25 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new CommunicationException($"Unable to locate {nameof(AspNetCoreRequestRouter)} binding parameter. Ensure the ServiceBehavior has been associated with the host.");
 
             return (IChannelListener<TChannel>)new AspNetCoreReplyChannelListener(router, this, context);
+        }
+
+        void IWsdlExportExtension.ExportContract(WsdlExporter exporter, WsdlContractConversionContext context)
+        {
+
+        }
+
+        void IWsdlExportExtension.ExportEndpoint(WsdlExporter exporter, WsdlEndpointConversionContext context)
+        {
+            if (exporter == null)
+                throw new ArgumentNullException(nameof(exporter));
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            foreach (var extension in context.WsdlBinding.Extensions.OfType<SoapBinding>())
+            {
+                extension.Style = SoapBindingStyle.Document;
+                extension.Transport = "http://schemas.xmlsoap.org/soap/http";
+            }
         }
 
     }

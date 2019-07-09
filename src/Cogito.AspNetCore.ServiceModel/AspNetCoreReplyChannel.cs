@@ -459,7 +459,7 @@ namespace Cogito.AspNetCore.ServiceModel
 
             if (message.Version.Envelope == EnvelopeVersion.Soap11)
                 if (request.Headers.TryGetValue("SOAPAction", out var value))
-                    return value.FirstOrDefault();
+                    return value.FirstOrDefault()?.Trim('\'').Trim('"');
 
             if (message.Version.Envelope == EnvelopeVersion.Soap12 && !string.IsNullOrEmpty(request.ContentType))
             {
@@ -467,10 +467,10 @@ namespace Cogito.AspNetCore.ServiceModel
                 if (contentType.MediaType == "multipart/related" &&
                     contentType.Parameters.ContainsKey("start-info"))
                     // action in start-info as defined in RFC2387
-                    return new ContentType(contentType.Parameters["start-info"]).Parameters["action"]?.Trim('\'');
+                    return new ContentType(contentType.Parameters["start-info"]).Parameters["action"]?.Trim('\'').Trim('"');
 
                 // default location for action
-                return contentType.Parameters["action"]?.Trim('\'');
+                return contentType.Parameters["action"]?.Trim('\'').Trim('"');
             }
 
             return null;
