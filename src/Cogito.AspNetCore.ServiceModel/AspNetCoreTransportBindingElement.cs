@@ -5,12 +5,17 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.Web.Services.Description;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
 
     public class AspNetCoreTransportBindingElement : TransportBindingElement, IWsdlExportExtension
     {
+
+        const string wsa = "http://schemas.xmlsoap.org/ws/2004/08/addressing";
+        const string wsa10 = "http://www.w3.org/2005/08/addressing";
 
         /// <summary>
         /// Initializes a new instance.
@@ -105,10 +110,42 @@ namespace Cogito.AspNetCore.ServiceModel
                 throw new ArgumentNullException(nameof(context));
 
             foreach (var extension in context.WsdlBinding.Extensions.OfType<SoapBinding>())
-            {
-                extension.Style = SoapBindingStyle.Document;
                 extension.Transport = "http://schemas.xmlsoap.org/soap/http";
-            }
+
+            AddAddressToWsdlPort(context.WsdlPort, context.Endpoint.Address, context.Endpoint.Binding.MessageVersion.Addressing);
+        }
+
+        /// <summary>
+        /// Adds addressing extensions to the WSDL port.
+        /// </summary>
+        /// <param name="wsdlPort"></param>
+        /// <param name="addr"></param>
+        /// <param name="addressing"></param>
+        void AddAddressToWsdlPort(Port wsdlPort, EndpointAddress addr, AddressingVersion addressing)
+        {
+            if (addressing == AddressingVersion.None)
+                return;
+
+            // prepare temporary child attribute with prefixes defined above
+            var xml = new XDocument(new XElement("temp"));
+            if (addressing == AddressingVersion.WSAddressingAugust2004)
+                xml.Root.Add(new XAttribute(XNamespace.Xmlns + "wsa", wsa));
+            if (addressing == AddressingVersion.WSAddressing10)
+                xml.Root.Add(new XAttribute(XNamespace.Xmlns + "wsa10", wsa10));
+
+            // write into root element
+            using (var wrt = xml.Root.CreateWriter())
+                addr.WriteTo(addressing, wrt);
+
+            // strip needless definitions
+            xml.Root.Elements().Attributes().Where(i => i.IsNamespaceDeclaration).Remove();
+
+            // reoutput to new document
+            var ele = new XmlDocument();
+            using (var rdr = xml.Root.CreateReader())
+                ele.Load(rdr);
+
+            wsdlPort.Extensions.Add(ele.DocumentElement.ChildNodes[0]);
         }
 
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Services.Description;
+using System.Xml;
 using System.Xml.Schema;
 
 using Cogito.AspNetCore.ServiceModel.Collections;
@@ -16,6 +17,9 @@ namespace Cogito.AspNetCore.ServiceModel
     /// </summary>
     class AspNetCoreMetadataRewriter
     {
+
+        const string wsa = "http://schemas.xmlsoap.org/ws/2004/08/addressing";
+        const string wsa10 = "http://www.w3.org/2005/08/addressing";
 
         readonly Dictionary<object, int> indexes = new Dictionary<object, int>();
         readonly AspNetCoreMessageProperty properties;
@@ -144,14 +148,37 @@ namespace Cogito.AspNetCore.ServiceModel
 
         void RewritePort(Port port)
         {
-            foreach (ServiceDescriptionFormatExtension extension in port.Extensions)
+            foreach (object extension in port.Extensions)
                 RewriteExtension(extension);
         }
 
-        void RewriteExtension(ServiceDescriptionFormatExtension extension)
+        void RewriteExtension(object extension)
         {
             if (extension is SoapAddressBinding addressBinding)
                 RewriteSoapAddressBinding(addressBinding);
+
+            if (extension is XmlElement element)
+            {
+                if (element.NamespaceURI == wsa && element.LocalName == "EndpointReference")
+                    RewriteWSAddressingEndpointReference(element);
+
+                if (element.NamespaceURI == wsa10 && element.LocalName == "EndpointReference")
+                    RewriteWSAddressing10EndpointReference(element);
+            }
+        }
+
+        void RewriteWSAddressingEndpointReference(XmlElement element)
+        {
+            foreach (XmlElement address in element.GetElementsByTagName("Address", wsa))
+                if (address.HasChildNodes && address.FirstChild is XmlText text)
+                    text.Value = RewriteAddress(text.Value);
+        }
+
+        void RewriteWSAddressing10EndpointReference(XmlElement element)
+        {
+            foreach (XmlElement address in element.GetElementsByTagName("Address", wsa10))
+                if (address.HasChildNodes && address.FirstChild is XmlText text)
+                    text.Value = RewriteAddress(text.Value);
         }
 
         void RewriteSoapAddressBinding(SoapAddressBinding addressBinding)
