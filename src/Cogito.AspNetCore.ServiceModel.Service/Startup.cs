@@ -1,6 +1,5 @@
-﻿using System.ServiceModel;
-using System.ServiceModel.Channels;
-using LexisNexis.EFM;
+﻿using System.ServiceModel.Channels;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
