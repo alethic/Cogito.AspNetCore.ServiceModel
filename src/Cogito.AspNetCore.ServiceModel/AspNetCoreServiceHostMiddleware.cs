@@ -5,6 +5,8 @@ using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.Threading.Tasks;
 
+using Cogito.ServiceModel.DependencyInjection;
+
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -99,6 +101,7 @@ namespace Cogito.AspNetCore.ServiceModel
             this(next, bindings, router, messageVersion, applicationLifetime, logger, serviceProvider)
         {
             host = new AspNetCoreServiceHost(serviceType, AddDefaultServiceEndpoint, httpBaseUri, httpsBaseUri);
+            host.AddDependencyInjectionBehavior(serviceType, serviceProvider);
             host.Description.Behaviors.Add(new AspNetCoreRequestRouterBehavior(router));
             host.Description.Behaviors.Add(new AspNetCoreServiceMetadataBehavior());
 
