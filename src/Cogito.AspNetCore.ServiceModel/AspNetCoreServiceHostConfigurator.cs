@@ -66,12 +66,12 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Gets a reference to the binding.
         /// </summary>
-        public Binding HttpBinding => middleware.HttpBinding;
+        public AspNetCoreBinding HttpBinding => middleware.HttpBinding;
 
         /// <summary>
         /// Gets a reference to the binding.
         /// </summary>
-        public Binding HttpsBinding => middleware.HttpsBinding;
+        public AspNetCoreBinding HttpsBinding => middleware.HttpsBinding;
 
     }
 

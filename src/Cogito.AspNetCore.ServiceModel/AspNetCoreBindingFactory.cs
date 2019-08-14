@@ -18,7 +18,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="secure"></param>
         /// <param name="method"></param>
         /// <returns></returns>
-        public virtual Binding CreateBinding(IServiceProvider serviceProvider, MessageVersion messageVersion, bool secure, string method = null)
+        public virtual AspNetCoreBinding CreateBinding(IServiceProvider serviceProvider, MessageVersion messageVersion, bool secure, string method = null)
         {
             return new AspNetCoreBasicBinding()
             {

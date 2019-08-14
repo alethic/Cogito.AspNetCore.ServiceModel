@@ -25,8 +25,8 @@ namespace Cogito.AspNetCore.ServiceModel
         readonly AspNetCoreBindingFactory bindings;
         readonly AspNetCoreRequestRouter router;
 
-        readonly Binding httpBinding;
-        readonly Binding httpsBinding;
+        readonly AspNetCoreBinding httpBinding;
+        readonly AspNetCoreBinding httpsBinding;
         readonly ServiceHost host;
         readonly Guid routeId;
         readonly Uri httpBaseUri;
@@ -171,12 +171,12 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Binding configured for HTTP requests.
         /// </summary>
-        internal Binding HttpBinding => httpBinding;
+        internal AspNetCoreBinding HttpBinding => httpBinding;
 
         /// <summary>
         /// Binding configured for HTTPS requests.
         /// </summary>
-        internal Binding HttpsBinding => httpsBinding;
+        internal AspNetCoreBinding HttpsBinding => httpsBinding;
 
         /// <summary>
         /// Adds the default service endpoint for the given contract type.
