@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.ServiceModel;
+﻿using System.ComponentModel;
 using System.ServiceModel.Channels;
 using System.Xml;
 
@@ -13,8 +11,7 @@ namespace Cogito.AspNetCore.ServiceModel
     public abstract class AspNetCoreBinding : Binding, IBindingRuntimePreferences
     {
 
-        readonly TextMessageEncodingBindingElement textEncoding;
-        readonly MtomMessageEncodingBindingElement mtomEncoding;
+        readonly TextOrMtomEncodingBindingElement encoding;
         readonly AspNetCoreTransportBindingElement transport;
 
         /// <summary>
@@ -22,18 +19,8 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         protected AspNetCoreBinding()
         {
-            this.transport = new AspNetCoreTransportBindingElement();
-            this.textEncoding = new TextMessageEncodingBindingElement();
-            this.textEncoding.MessageVersion = MessageVersion.Soap11;
-            this.mtomEncoding = new MtomMessageEncodingBindingElement();
-            this.mtomEncoding.MessageVersion = MessageVersion.Soap11;
-
-            // default to MTOM defaults
-            textEncoding.ReaderQuotas = mtomEncoding.ReaderQuotas;
-            textEncoding.MaxReadPoolSize = mtomEncoding.MaxReadPoolSize;
-            textEncoding.MaxWritePoolSize = mtomEncoding.MaxWritePoolSize;
-            textEncoding.MessageVersion = mtomEncoding.MessageVersion;
-            textEncoding.WriteEncoding = mtomEncoding.WriteEncoding;
+            transport = new AspNetCoreTransportBindingElement();
+            encoding = new TextOrMtomEncodingBindingElement() { MessageVersion = MessageVersion.Soap11 };
         }
 
         /// <summary>
@@ -62,50 +49,15 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <summary>
         /// Gets the text encoding element.
         /// </summary>
-        public TextMessageEncodingBindingElement TextEncodingElement => textEncoding;
-
-        /// <summary>
-        /// Gets the MTOM encoding element.
-        /// </summary>
-        public MtomMessageEncodingBindingElement MtomEncodingElement => mtomEncoding;
-
-        /// <summary>
-        /// Gets or sets the message encoding.
-        /// </summary>
-        [DefaultValue(WSMessageEncoding.Text)]
-        public WSMessageEncoding MessageEncoding { get; set; } = WSMessageEncoding.Text;
+        public TextOrMtomEncodingBindingElement EncodingElement => encoding;
 
         /// <summary>
         /// Gets or sets the SOAP and WS-Addressing versions that are used to format the text message.
         /// </summary>
         public new MessageVersion MessageVersion
         {
-            get
-            {
-                switch (MessageEncoding)
-                {
-                    case WSMessageEncoding.Text:
-                        return textEncoding.MessageVersion;
-                    case WSMessageEncoding.Mtom:
-                        return mtomEncoding.MessageVersion;
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
-            set
-            {
-                switch (MessageEncoding)
-                {
-                    case WSMessageEncoding.Text:
-                        textEncoding.MessageVersion = value;
-                        break;
-                    case WSMessageEncoding.Mtom:
-                        mtomEncoding.MessageVersion = value;
-                        break;
-                    default:
-                        throw new InvalidOperationException();
-                }
-            }
+            get => encoding.MessageVersion;
+            set => encoding.MessageVersion = value;
         }
 
         /// <summary>
@@ -114,8 +66,8 @@ namespace Cogito.AspNetCore.ServiceModel
         [DefaultValue(AspNetCoreTransportDefaults.MaxBufferSize)]
         public int MaxBufferSize
         {
-            get { return transport.MaxBufferSize; }
-            set { transport.MaxBufferSize = mtomEncoding.MaxBufferSize = value; }
+            get => transport.MaxBufferSize;
+            set => transport.MaxBufferSize = encoding.MaxBufferSize = value;
         }
 
         /// <summary>
@@ -123,8 +75,8 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public long MaxBufferPoolSize
         {
-            get { return transport.MaxBufferPoolSize; }
-            set { transport.MaxBufferPoolSize = value; }
+            get => transport.MaxBufferPoolSize;
+            set => transport.MaxBufferPoolSize = value;
         }
 
         /// <summary>
@@ -132,8 +84,8 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public long MaxReceivedMessageSize
         {
-            get { return transport.MaxReceivedMessageSize; }
-            set { transport.MaxReceivedMessageSize = value; }
+            get => transport.MaxReceivedMessageSize;
+            set => transport.MaxReceivedMessageSize = value;
         }
 
         /// <summary>
@@ -142,8 +94,8 @@ namespace Cogito.AspNetCore.ServiceModel
         [DefaultValue(AspNetCoreTransportDefaults.MaxFaultSize)]
         public int MaxFaultSize
         {
-            get { return transport.MaxFaultSize; }
-            set { transport.MaxFaultSize = value; }
+            get => transport.MaxFaultSize;
+            set => transport.MaxFaultSize = value;
         }
 
         /// <summary>
@@ -151,8 +103,8 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public int MaxReadPoolSize
         {
-            get { return textEncoding.MaxReadPoolSize; }
-            set { textEncoding.MaxReadPoolSize = mtomEncoding.MaxReadPoolSize = value; }
+            get => encoding.MaxReadPoolSize;
+            set => encoding.MaxReadPoolSize = value;
         }
 
         /// <summary>
@@ -160,18 +112,15 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public int MaxWritePoolSize
         {
-            get { return textEncoding.MaxWritePoolSize; }
-            set { textEncoding.MaxWritePoolSize = mtomEncoding.MaxWritePoolSize = value; }
+            get => encoding.MaxWritePoolSize;
+            set => encoding.MaxWritePoolSize = value;
         }
 
         /// <summary>
         /// Gets or sets constraints on the complexity of XML messages that can be processed by endpoints configured
         /// with this binding.
         /// </summary>
-        public XmlDictionaryReaderQuotas ReaderQuotas
-        {
-            get { return mtomEncoding.ReaderQuotas; }
-        }
+        public XmlDictionaryReaderQuotas ReaderQuotas => encoding.ReaderQuotas;
 
         /// <summary>
         /// Creates the binding elements.
@@ -180,18 +129,8 @@ namespace Cogito.AspNetCore.ServiceModel
         public override BindingElementCollection CreateBindingElements()
         {
             var c = new BindingElementCollection();
-
-            // text encoding specified
-            if (MessageEncoding == WSMessageEncoding.Text)
-                c.Add(TextEncodingElement);
-
-            // mtom encoding specified
-            if (MessageEncoding == WSMessageEncoding.Mtom)
-                c.Add(MtomEncodingElement);
-
-            // add ASP.Net Core Transport
+            c.Add(EncodingElement);
             c.Add(transport);
-
             return c;
         }
 

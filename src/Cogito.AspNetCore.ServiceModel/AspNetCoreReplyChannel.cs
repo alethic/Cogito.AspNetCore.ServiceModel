@@ -46,7 +46,7 @@ namespace Cogito.AspNetCore.ServiceModel
             var method = encoder.GetType().GetMethod("GetContentType", BindingFlags.NonPublic | BindingFlags.Instance);
             if (method == null)
                 throw new MissingMethodException("Could not find the MtomMessageEncoder.GetContentType method");
-
+            
             return method;
         }
 
@@ -66,9 +66,6 @@ namespace Cogito.AspNetCore.ServiceModel
             boundary = (string)arg[0];
             return ret;
         }
-
-        const int MaxBufferSize = 64 * 1024;
-        const int MaxSizeOfHeaders = 4 * 1024;
 
         AspNetCoreRequest request;
         AspNetCoreRequestQueueLease lease;
