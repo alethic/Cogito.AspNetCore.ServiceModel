@@ -89,6 +89,9 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         static bool IsMtomMessage(string contentType)
         {
+            if (contentType is null)
+                throw new ArgumentNullException(nameof(contentType));
+
             return contentType.IndexOf("type=\"application/xop+xml\"", StringComparison.OrdinalIgnoreCase) >= 0;
         }
 
@@ -127,6 +130,9 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         public override Message ReadMessage(Stream stream, int maxSizeOfHeaders, string contentType)
         {
+            if (stream is null)
+                throw new ArgumentNullException(nameof(stream));
+
             if (IsMtomMessage(contentType))
             {
                 if (mtom == null)
@@ -151,6 +157,9 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         bool ShouldWriteMtom(Message message)
         {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
             return mtom != null && message.Properties.TryGetValue(TextOrMtomEncodingBindingElement.IsIncomingMessageMtomPropertyName, out var temp) && (bool)temp;
         }
 
@@ -164,6 +173,11 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         public override ArraySegment<byte> WriteMessage(Message message, int maxMessageSize, BufferManager bufferManager, int messageOffset)
         {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+            if (bufferManager is null)
+                throw new ArgumentNullException(nameof(bufferManager));
+
             if (ShouldWriteMtom(message))
             {
                 using (var ms = new MemoryStream())
@@ -189,6 +203,11 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <param name="stream"></param>
         public override void WriteMessage(Message message, Stream stream)
         {
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+            if (stream is null)
+                throw new ArgumentNullException(nameof(stream));
+
             if (ShouldWriteMtom(message))
             {
                 var mtomWriter = CreateMtomWriter(stream, message);
@@ -209,10 +228,20 @@ namespace Cogito.AspNetCore.ServiceModel
         /// <returns></returns>
         XmlDictionaryWriter CreateMtomWriter(Stream stream, Message message)
         {
-            var boundary = message.Properties[TextOrMtomEncodingBindingElement.MtomBoundaryPropertyName] as string;
-            var startUri = message.Properties[TextOrMtomEncodingBindingElement.MtomStartUriPropertyName] as string;
-            var startInfo = message.Properties[TextOrMtomEncodingBindingElement.MtomStartInfoPropertyName] as string;
-            return XmlDictionaryWriter.CreateMtomWriter(stream, Encoding.UTF8, int.MaxValue, startInfo, boundary, startUri, false, false);
+            if (stream is null)
+                throw new ArgumentNullException(nameof(stream));
+            if (message is null)
+                throw new ArgumentNullException(nameof(message));
+
+            return XmlDictionaryWriter.CreateMtomWriter(
+                stream,
+                Encoding.UTF8,
+                int.MaxValue,
+                message.Properties[TextOrMtomEncodingBindingElement.MtomStartInfoPropertyName] as string,
+                message.Properties[TextOrMtomEncodingBindingElement.MtomBoundaryPropertyName] as string,
+                message.Properties[TextOrMtomEncodingBindingElement.MtomStartUriPropertyName] as string,
+                false,
+                false);
         }
 
     }
