@@ -46,7 +46,7 @@ namespace Cogito.AspNetCore.ServiceModel
             var method = encoder.GetType().GetMethod("GetContentType", BindingFlags.NonPublic | BindingFlags.Instance);
             if (method == null)
                 throw new MissingMethodException("Could not find the MtomMessageEncoder.GetContentType method");
-            
+
             return method;
         }
 
@@ -95,8 +95,9 @@ namespace Cogito.AspNetCore.ServiceModel
             this.request = request ?? throw new ArgumentNullException(nameof(request));
             this.lease = lease ?? throw new ArgumentNullException(nameof(lease));
             this.bufferManager = bufferManager ?? throw new ArgumentNullException(nameof(bufferManager));
+
             this.localAddress = localAddress ?? throw new ArgumentNullException(nameof(localAddress));
-            this.encoder = encoderFactory.CreateSessionEncoder();
+            encoder = encoderFactory.CreateSessionEncoder();
         }
 
         /// <summary>
@@ -529,7 +530,10 @@ namespace Cogito.AspNetCore.ServiceModel
             // message contains HTTP specific information
             if (message.Properties.TryGetValue(HttpResponseMessageProperty.Name, out var o) && o is HttpResponseMessageProperty property)
             {
-                response.StatusCode = (int)property.StatusCode;
+                // message seems to come along with OK even if there's an error
+                // ignore OK, but still process, in case some other status matters
+                if (property.StatusCode != HttpStatusCode.OK)
+                    response.StatusCode = (int)property.StatusCode;
 
                 // add custom response reason if supported
                 var responseFeature = response.HttpContext.Features.Get<IHttpResponseFeature>();
