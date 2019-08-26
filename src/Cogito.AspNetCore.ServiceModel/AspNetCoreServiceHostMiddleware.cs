@@ -102,6 +102,7 @@ namespace Cogito.AspNetCore.ServiceModel
         {
             host = new AspNetCoreServiceHost(serviceType, AddDefaultServiceEndpoint, httpBaseUri, httpsBaseUri);
             host.AddDependencyInjectionBehavior(serviceType, serviceProvider);
+            host.Description.Behaviors.Add(new TextOrMtomEncoderInspector());
             host.Description.Behaviors.Add(new AspNetCoreRequestRouterBehavior(router));
             host.Description.Behaviors.Add(new AspNetCoreServiceMetadataBehavior());
 

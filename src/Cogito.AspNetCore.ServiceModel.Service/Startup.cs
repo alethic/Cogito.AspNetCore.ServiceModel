@@ -13,6 +13,7 @@ namespace Cogito.AspNetCore.ServiceModel.Service
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddServiceModel();
+            services.AddSingleton<MathService>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)

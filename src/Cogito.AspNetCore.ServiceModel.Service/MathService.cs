@@ -1,35 +1,17 @@
-﻿using LexisNexis.EFM;
+﻿using System.ServiceModel;
 
 namespace Cogito.AspNetCore.ServiceModel.Service
 {
 
-
-    public class MathService : ILoxnpWebService, IOtherServiceType
+    [ServiceBehavior(IncludeExceptionDetailInFaults = true)]
+    public class MathService : IMathService
     {
-        public void Do2()
+
+        public int Add(int a, int b)
         {
-            throw new System.NotImplementedException();
+            return a + b;
         }
 
-        public void Do3()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public void Enqueue(string xml)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public object InitiateTransaction(object data)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public object ReceiveMTOM(object data, object documents)
-        {
-            throw new System.NotImplementedException();
-        }
     }
 
 }

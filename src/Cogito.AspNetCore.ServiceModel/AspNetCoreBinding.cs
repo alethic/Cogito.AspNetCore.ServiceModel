@@ -47,11 +47,6 @@ namespace Cogito.AspNetCore.ServiceModel
         public override string Scheme => transport.Scheme;
 
         /// <summary>
-        /// Gets the text encoding element.
-        /// </summary>
-        public TextOrMtomEncodingBindingElement EncodingElement => encoding;
-
-        /// <summary>
         /// Gets or sets the SOAP and WS-Addressing versions that are used to format the text message.
         /// </summary>
         public new MessageVersion MessageVersion
@@ -129,7 +124,7 @@ namespace Cogito.AspNetCore.ServiceModel
         public override BindingElementCollection CreateBindingElements()
         {
             var c = new BindingElementCollection();
-            c.Add(EncodingElement);
+            c.Add(encoding);
             c.Add(transport);
             return c;
         }

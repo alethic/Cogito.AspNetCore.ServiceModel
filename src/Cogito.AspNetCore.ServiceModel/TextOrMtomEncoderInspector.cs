@@ -1,14 +1,33 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.Net;
+using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
+using Cogito.Collections;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
 
-    class TextOrMtomEncoderInspector : IEndpointBehavior, IDispatchMessageInspector
+    class TextOrMtomEncoderInspector : IServiceBehavior, IEndpointBehavior, IDispatchMessageInspector
     {
+
+        public void Validate(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
+        {
+
+        }
+
+        public void AddBindingParameters(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase, Collection<ServiceEndpoint> endpoints, BindingParameterCollection bindingParameters)
+        {
+
+        }
+
+        public void ApplyDispatchBehavior(ServiceDescription serviceDescription, ServiceHostBase serviceHostBase)
+        {
+            foreach (var endpoint in serviceDescription.Endpoints)
+                endpoint.EndpointBehaviors.Add(this);
+        }
 
         public void AddBindingParameters(ServiceEndpoint endpoint, BindingParameterCollection bindingParameters)
         {
@@ -45,19 +64,10 @@ namespace Cogito.AspNetCore.ServiceModel
                 var startInfo = "application/soap+xml";
                 var contentType = $"multipart/related; type=\"application/xop+xml\";start=\"<{startUri}>\";boundary=\"{boundary}\";start-info=\"{startInfo}\"";
 
-                HttpResponseMessageProperty respProp;
-                if (reply.Properties.ContainsKey(HttpResponseMessageProperty.Name))
-                {
-                    respProp = reply.Properties[HttpResponseMessageProperty.Name] as HttpResponseMessageProperty;
-                }
-                else
-                {
-                    respProp = new HttpResponseMessageProperty();
-                    reply.Properties[HttpResponseMessageProperty.Name] = respProp;
-                }
-
-                respProp.Headers[HttpResponseHeader.ContentType] = contentType;
-                respProp.Headers["MIME-Version"] = "1.0";
+                // configure the response properties
+                var properties = (HttpResponseMessageProperty)reply.Properties.GetOrAdd(HttpResponseMessageProperty.Name, k => new HttpResponseMessageProperty());
+                properties.Headers[HttpResponseHeader.ContentType] = contentType;
+                properties.Headers["MIME-Version"] = "1.0";
 
                 reply.Properties[TextOrMtomEncodingBindingElement.MtomBoundaryPropertyName] = boundary;
                 reply.Properties[TextOrMtomEncodingBindingElement.MtomStartInfoPropertyName] = startInfo;
