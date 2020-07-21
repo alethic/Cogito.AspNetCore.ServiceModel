@@ -1,11 +1,31 @@
-﻿using System.ServiceModel.Channels;
+﻿using System;
+using System.Reflection;
+using System.ServiceModel;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
+using System.Web.Services.Description;
 using System.Xml;
 
 namespace Cogito.AspNetCore.ServiceModel
 {
 
-    public class TextOrMtomEncodingBindingElement : MessageEncodingBindingElement
+    public class TextOrMtomEncodingBindingElement : MessageEncodingBindingElement, IWsdlExportExtension
     {
+
+        static readonly MethodInfo SetSoapVersionMethod = Type.GetType("System.ServiceModel.Description.SoapHelper, System.ServiceModel")
+            .GetMethod("SetSoapVersion", BindingFlags.Static | BindingFlags.NonPublic);
+
+        /// <summary>
+        /// Invokes SoapHelper.SetSoapVersion as used from original encoders. Seeds the metadata with the appropriate
+        /// <see cref="SoapBinding"/> element to ensure WSDL renders.
+        /// </summary>
+        /// <param name="endpointContext"></param>
+        /// <param name="exporter"></param>
+        /// <param name="version"></param>
+        static void SetSoapVersion(WsdlEndpointConversionContext endpointContext, WsdlExporter exporter, EnvelopeVersion version)
+        {
+            SetSoapVersionMethod.Invoke(null, new object[] { endpointContext, exporter, version });
+        }
 
         public const string IsIncomingMessageMtomPropertyName = "IncomingMessageIsMtom";
         public const string MtomBoundaryPropertyName = "__MtomBoundary";
@@ -75,6 +95,16 @@ namespace Cogito.AspNetCore.ServiceModel
         public override bool CanBuildChannelListener<TChannel>(BindingContext context)
         {
             return context.CanBuildInnerChannelListener<TChannel>();
+        }
+
+        public void ExportContract(WsdlExporter exporter, WsdlContractConversionContext context)
+        {
+
+        }
+
+        public void ExportEndpoint(WsdlExporter exporter, WsdlEndpointConversionContext context)
+        {
+            SetSoapVersion(context, exporter, MessageVersion.Envelope);
         }
 
     }

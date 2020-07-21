@@ -5,6 +5,7 @@ using System.ServiceModel;
 using System.ServiceModel.Channels;
 using System.ServiceModel.Description;
 using System.ServiceModel.Dispatcher;
+
 using Cogito.Collections;
 
 namespace Cogito.AspNetCore.ServiceModel
@@ -48,14 +49,14 @@ namespace Cogito.AspNetCore.ServiceModel
         {
         }
 
-        public object AfterReceiveRequest(ref Message request, System.ServiceModel.IClientChannel channel, System.ServiceModel.InstanceContext instanceContext)
+        public object AfterReceiveRequest(ref Message request, IClientChannel channel, InstanceContext instanceContext)
         {
             return request.Properties.TryGetValue(TextOrMtomEncodingBindingElement.IsIncomingMessageMtomPropertyName, out var result) ? result : null;
         }
 
         public void BeforeSendReply(ref Message reply, object correlationState)
         {
-            var isMtom = correlationState is bool && (bool)correlationState;
+            var isMtom = correlationState is bool boolean && boolean;
             reply.Properties.Add(TextOrMtomEncodingBindingElement.IsIncomingMessageMtomPropertyName, isMtom);
             if (isMtom)
             {
