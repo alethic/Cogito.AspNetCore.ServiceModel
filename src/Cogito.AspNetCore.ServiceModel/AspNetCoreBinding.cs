@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.ServiceModel.Channels;
+using System.Text;
 using System.Xml;
 
 namespace Cogito.AspNetCore.ServiceModel
@@ -51,7 +52,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public new MessageVersion MessageVersion
         {
-            get => encoding.MessageVersion;
+            get => base.MessageVersion;
             set => encoding.MessageVersion = value;
         }
 

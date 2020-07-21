@@ -23,7 +23,7 @@ namespace Cogito.AspNetCore.ServiceModel
         /// </summary>
         public AspNetCoreRequestQueue()
         {
-            this.buffer = new BufferBlock<AspNetCoreRequest>();
+            buffer = new BufferBlock<AspNetCoreRequest>();
         }
 
         /// <summary>

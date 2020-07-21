@@ -62,8 +62,8 @@ namespace Cogito.AspNetCore.ServiceModel
             routeId = Guid.NewGuid();
 
             // listen on multiple URIs
-            httpBaseUri = new Uri($"http://{routeId.ToString("N")}/");
-            httpsBaseUri = new Uri($"https://{routeId.ToString("N")}/");
+            httpBaseUri = new Uri($"http://{routeId:N}/");
+            httpsBaseUri = new Uri($"https://{routeId:N}/");
 
             // register for cleanup when application is stopped
             applicationLifetime.ApplicationStopping.Register(() =>
@@ -246,6 +246,14 @@ namespace Cogito.AspNetCore.ServiceModel
             // dispatch request to router, which sends to service host
             context.Items[AspNetCoreUri.UriContextItemName] = b.Uri;
             await router.RunAsync(context);
+
+            var e = new WsdlExporter();
+            e.PolicyVersion = PolicyVersion.Policy12;
+
+            foreach (var ep in host.Description.Endpoints)
+                e.ExportEndpoint(ep);
+
+            var d = e.GetGeneratedMetadata();
         }
 
     }

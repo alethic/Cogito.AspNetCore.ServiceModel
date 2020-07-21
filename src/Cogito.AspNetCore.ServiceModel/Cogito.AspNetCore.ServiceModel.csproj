@@ -12,8 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cogito.Core" Version="3.0.0" />
-    <PackageReference Include="Cogito.ServiceModel.DependencyInjection" Version="0.1.6" />
+    <PackageReference Include="Cogito.Core" Version="3.1.13" />
+    <PackageReference Include="Cogito.ServiceModel.DependencyInjection" Version="0.1.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
