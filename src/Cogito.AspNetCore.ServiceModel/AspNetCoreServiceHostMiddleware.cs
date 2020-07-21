@@ -246,14 +246,6 @@ namespace Cogito.AspNetCore.ServiceModel
             // dispatch request to router, which sends to service host
             context.Items[AspNetCoreUri.UriContextItemName] = b.Uri;
             await router.RunAsync(context);
-
-            var e = new WsdlExporter();
-            e.PolicyVersion = PolicyVersion.Policy12;
-
-            foreach (var ep in host.Description.Endpoints)
-                e.ExportEndpoint(ep);
-
-            var d = e.GetGeneratedMetadata();
         }
 
     }
