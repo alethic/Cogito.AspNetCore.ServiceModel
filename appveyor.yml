@@ -1,12 +1,6 @@
-image: Visual Studio 20179
+image: Visual Studio 2019
 configuration: Release
 platform: Any CPU
-
-environment:
-  solution_file: src/Cogito.AspNetCore.ServiceModel.sln
-
-cache:
-  - src\packages -> src\**\packages.config
 
 install:
   - choco install gitversion.portable -pre -y
