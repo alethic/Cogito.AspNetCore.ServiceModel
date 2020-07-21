@@ -17,7 +17,7 @@ before_build:
 
 build:
   verbosity: minimal
-  project: Cogito.AspNetCore.ServiceModel.sln
+  project: src\Cogito.AspNetCore.ServiceModel.sln
 
 artifacts:
   - path: pkg\*.nupkg
