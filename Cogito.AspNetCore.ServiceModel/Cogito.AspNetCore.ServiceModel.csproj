@@ -2,24 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Authors>Jerome Haltom</Authors>
-    <Company />
     <Description>ASP.NET Core WCF middleware. Includes middleware for routing SOAP requests to WCF ServiceHost instances. Allows you to host your SOAP service on ASP.Net Core.</Description>
-    <PackageProjectUrl>https://github.com/wasabii/Cogito.AspNetCore.ServiceModel</PackageProjectUrl>
-    <PackageIconUrl>https://cloverluxussc.blob.core.windows.net/public/cogito-nuget-icon.png</PackageIconUrl>
-    <LangVersion>7.2</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cogito.Core" Version="3.1.13" />
-    <PackageReference Include="Cogito.ServiceModel.DependencyInjection" Version="0.1.7" />
+    <PackageReference Include="Cogito.Core" Version="3.1.18" />
+    <PackageReference Include="Cogito.ServiceModel.DependencyInjection" Version="0.1.12" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.11.1" />
   </ItemGroup>
 
   <ItemGroup>
