@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net47</TargetFramework>
     <Description>ASP.NET Core WCF middleware. Includes middleware for routing SOAP requests to WCF ServiceHost instances. Allows you to host your SOAP service on ASP.Net Core.</Description>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,0 +1,19 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path=".github/workflows/Cogito.AspNetCore.ServiceModel.yml" />
+    <File Path="Cogito.AspNetCore.ServiceModel.dist.msbuildproj" />
+    <File Path="Directory.Build.props" />
+    <File Path="GitVersion.yml" />
+    <File Path="global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Project Path="src/Cogito.AspNetCore.ServiceModel.Service/Cogito.AspNetCore.ServiceModel.Service.csproj" />
+  <Project Path="src/Cogito.AspNetCore.ServiceModel.Tests/Cogito.AspNetCore.ServiceModel.Tests.csproj" />
+  <Project Path="src/Cogito.AspNetCore.ServiceModel/Cogito.AspNetCore.ServiceModel.csproj" />
+  <Folder Name="/dist/">
+    <Project Path="src/dist-nuget/dist-nuget.csproj" />
+    <Project Path="src/dist-tests/dist-tests.csproj" />
+  </Folder>
+</Solution>
