@@ -24,6 +24,10 @@ jobs:
       uses: actions/checkout@v6
       with:
         fetch-depth: 0
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 6.0.x
     - name: Setup .NET 10.0
       uses: actions/setup-dotnet@v5
       with:
@@ -90,6 +94,10 @@ jobs:
     - build
     runs-on: ${{ fromJSON('{"win-x64":["windows-2022"],"linux-x64":["ubuntu-24.04"],"osx-arm64":["macos-15"]}')[matrix.sys] }}
     steps:
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 6.0.x
     - name: Setup .NET 10.0
       uses: actions/setup-dotnet@v5
       with:
@@ -119,8 +127,12 @@ jobs:
         }
 
         # scan and process test assemblies
-        # the suite name is the assembly name; a missing path is a staging gap and must fail
-        $tests = $(gi .\tests\$tst\$tfm\$tst.dll)
+        # under the MSTest SDK a .NET Framework suite builds as an .exe, not a .dll;
+        # a suite that is staged at neither is a staging gap and must fail
+        $dir = ".\tests\$tst\$tfm"
+        $tests = $(gi "$dir\$tst.dll" -ErrorAction SilentlyContinue)
+        if (-not $tests) { $tests = $(gi "$dir\$tst.exe" -ErrorAction SilentlyContinue) }
+        if (-not $tests) { throw "no test assembly staged for $tst at $tfm" }
         if ($tests) {
             $argl = @(
                 "-f", $tfm,
@@ -167,6 +179,10 @@ jobs:
       uses: actions/checkout@v6
       with:
         fetch-depth: 0
+    - name: Setup .NET 6.0
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: 6.0.x
     - name: Setup .NET 10.0
       uses: actions/setup-dotnet@v5
       with:
