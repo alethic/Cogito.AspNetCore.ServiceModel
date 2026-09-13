@@ -1,4 +1,6 @@
 # Cogito.AspNetCore.ServiceModel
+
+[![Build](https://github.com/alethic/Cogito.AspNetCore.ServiceModel/actions/workflows/Cogito.AspNetCore.ServiceModel.yml/badge.svg)](https://github.com/alethic/Cogito.AspNetCore.ServiceModel/actions/workflows/Cogito.AspNetCore.ServiceModel.yml)
 WCF support for ASP.Net Core
 
 Provides middleware for ASP.Net Core for wiring up a WCF `ServiceHost` instance and directing requests to it. This is a bit more complicated than just establishing a binding and dispatcher.
@@ -36,3 +38,9 @@ like Autofac integration. And it keeps the dispatch/contract discovery stuff in 
 
 The `ServiceHost` is automatically configured with service metadata endpoints at ?wsdl, and a help page, like most
 standard WCF services. A channel dispatcher message inspector is used to rewrite router URLs in the response.
+
+## Packages
+
+| Package | Version |
+| --- | --- |
+| [Cogito.AspNetCore.ServiceModel](https://www.nuget.org/packages/Cogito.AspNetCore.ServiceModel) | [![NuGet](https://img.shields.io/nuget/v/Cogito.AspNetCore.ServiceModel.svg)](https://www.nuget.org/packages/Cogito.AspNetCore.ServiceModel) |
