@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Cogito.Core" Version="3.1.18" />
-    <PackageReference Include="Cogito.ServiceModel.DependencyInjection" Version="0.1.12" />
+    <PackageReference Include="Cogito.Core" Version="3.1.37" />
+    <PackageReference Include="Cogito.ServiceModel.DependencyInjection" Version="0.1.13" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="2.3.13" />
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.13" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="2.3.13" />
